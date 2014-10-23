@@ -1,15 +1,14 @@
 from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
 
-from dbs_builder.task_api import TaskApi
-
 import json
 import copy
 
 from django.http import HttpResponse
-from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 
 from ..models import TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
+from ..task_api import TaskApi
 
 def JsonResponse(response):
     return HttpResponse(json.dumps(response), content_type="application/json")
