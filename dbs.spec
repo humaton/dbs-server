@@ -1,4 +1,3 @@
-%global  dbs_port      8910
 %global  dbs_statedir  %{_sharedstatedir}/dbs
 %global  dbs_confdir   %{_sysconfdir}/dbs
 %global  cron_confdir  %{_sysconfdir}/cron.d
@@ -12,8 +11,8 @@ Release:        1%{?dist}
 Summary:        Docker Build Service
 Group:          Development Tools
 License:        TODO
-URL:            https://github.com/sYnfo/dbs
-Source0:        http://github.srcurl.net/sYnfo/%{name}/%{version}/%{name}-%{version}.tar.gz
+URL:            https://github.com/orgs/DBuildService/dashboard
+Source0:        http://github.srcurl.net/DBuildService/%{name}/%{version}/%{name}-%{version}.tar.gz
 
 BuildArch:      noarch
 
@@ -120,8 +119,17 @@ if [ ! -e               %{_sysconfdir}/pki/tls/certs/dbs.CA.crt ]; then
     ln -s localhost.crt %{_sysconfdir}/pki/tls/certs/dbs.CA.crt
 fi
 
-semanage port -a -t http_port_t -p tcp %{dbs_port} || :
 service httpd condrestart
+
+# allow apache read from htdocs and secret_key
+chcon    -t httpd_sys_content_t /var/lib/dbs/secret_key
+chcon    -t httpd_sys_content_t /var/lib/dbs/htdocs
+chcon    -t httpd_sys_content_t /var/lib/dbs/htdocs/wsgi.py
+chcon -R -t httpd_sys_content_t /var/lib/dbs/htdocs/static
+
+# allow apache write to data and media
+chcon -R -t httpd_sys_content_rw_t /var/lib/dbs/data
+chcon -R -t httpd_sys_content_rw_t /var/lib/dbs/htdocs/media
 
 # install / update database
 dbs syncdb --noinput || :
@@ -138,7 +146,7 @@ dbs collectstatic --noinput || :
 %config(noreplace) %{httpd_confdir}/%{name}.conf
 %config(noreplace) %{dbs_confdir}/site_settings
 %{dbs_statedir}/htdocs/wsgi.py*
-%attr(775,root,%{httpd_group}) %dir %{dbs_statedir}/htdocs/static
+%attr(755,root,root)           %dir %{dbs_statedir}/htdocs/static
 %attr(775,root,%{httpd_group}) %dir %{dbs_statedir}/htdocs/media
 %attr(775,root,%{httpd_group}) %dir %{dbs_statedir}/data
 %{python_sitelib}/%{name}
