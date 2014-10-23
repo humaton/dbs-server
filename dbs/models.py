@@ -7,7 +7,7 @@ class TaskData(models.Model):
 
 class Task(models.Model):
     date_started = models.DateTimeField()
-    date_finished = models.DateTimeField()
+    date_finished = models.DateTimeField(null=True, blank=True)
     builddev_id = models.CharField(max_length=38)
 
     STATUS_CHOICES = (
