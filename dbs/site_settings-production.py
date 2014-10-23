@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
 # vim: ft=python
 
-"""
-Django settings for dbs project.
+from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
 
-For more information on this file, see
-https://docs.djangoproject.com/en/1.7/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.7/ref/settings/
-"""
+import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os

@@ -8,6 +8,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.7/ref/settings/
 """
 
+from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
+
 # localsettings is used to store site depandant settings
 from .site_settings import (
     SECRET_KEY, ALLOWED_HOSTS, DATABASES,
