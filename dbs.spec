@@ -124,12 +124,12 @@ service httpd condrestart
 # allow apache read from htdocs and secret_key
 chcon    -t httpd_sys_content_t /var/lib/dbs/secret_key
 chcon    -t httpd_sys_content_t /var/lib/dbs/htdocs
-chcon    -t httpd_sys_content_t /var/lib/dbs/htdocs/wsgi.py
+chcon    -t httpd_sys_content_t /var/lib/dbs/htdocs/wsgi.py*
 chcon -R -t httpd_sys_content_t /var/lib/dbs/htdocs/static
 
 # allow apache write to data and media
-chcon -R -t httpd_sys_content_rw_t /var/lib/dbs/data
-chcon -R -t httpd_sys_content_rw_t /var/lib/dbs/htdocs/media
+chcon -R -t httpd_sys_rw_content_t /var/lib/dbs/data
+chcon -R -t httpd_sys_rw_content_t /var/lib/dbs/htdocs/media
 
 # install / update database
 dbs syncdb --noinput || :
