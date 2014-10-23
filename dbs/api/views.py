@@ -111,11 +111,13 @@ def task_status(request, task_id):
 def validate_rest_input(required_args, optional_args, request):
     # request.body -- requets sent as json
     # request.POST -- sent as application/*form*
-    data_sources = [request.POST]
+    data_sources = []
     try:
         data_sources.append(json.loads(request.body))
     except ValueError:
         pass
+    data_sources.append(request.POST)
+
     req_is_valid = False
     for source in data_sources:
         for req_arg in required_args:
