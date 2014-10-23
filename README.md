@@ -49,6 +49,11 @@ Run development server:
 
 Voilà!
 
+For connecting from different machine, listen on all networks and open port
+in Firewall. For Fedora 21 this can be done so:
+
+    firewall-cmd --permanent --add-port=8000/tcp
+    ./manage.py runserver 0.0.0.0:8000
 
 Manipulate with the data
 ------------------------
