@@ -27,6 +27,12 @@ class Task(models.Model):
     owner = models.CharField(max_length=38)
     task_data = models.ForeignKey(TaskData)
 
+    def get_type(self):
+        return dict(self.TYPE_CHOICES)[self.type]
+
+    def get_status(self):
+        return dict(self.STATUS_CHOICES)[self.status]
+
 class Rpms(models.Model):
     nvr = models.CharField(max_length=38)
     component = models.CharField(max_length=38)
