@@ -31,7 +31,7 @@ systemctl start docker-registry.serivce
 
 To start a celery worker, you have to be in directory where `celeryconfig.py` persists:
 ```
-[ -f celeryconfig.py ] && celery -A docker_tasks worker -l INFO
+celery -A dbs_worker.docker_tasks worker -l INFO
 ```
 
 

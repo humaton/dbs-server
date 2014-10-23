@@ -2,14 +2,16 @@ from celery import Celery
 from dock.core import DockerBuilder, DockerTasker
 
 
+import dbs_worker.celeryconfig
+
 #s/app/celery/ -- doesn't work on F20
 celery = Celery('image_build')
-celery.config_from_object('celeryconfig')
+celery.config_from_object(dbs_worker.celeryconfig)
 
 
 @celery.task
 def build_image(build_image, git_url, local_tag, git_dockerfile_path=None,
-                git_commit=None, source_registry=None, target_registry=None,
+                git_commit=None, source_registry=None, target_registries=None,
                 tag=None, repos=None, store_results=True):
     """
     build docker image from provided arguments
@@ -20,7 +22,7 @@ def build_image(build_image, git_url, local_tag, git_dockerfile_path=None,
     :param git_dockerfile_path: path to dockerfile within git repo (default is ./Dockerfile)
     :param git_commit: which commit to checkout (master by default)
     :param source_registry: pull base image from this registry
-    :param target_registry: push built image to this registry
+    :param target_registries: list of urls where built image will be pushed
     :param tag: tag image with this tag (and push it to target_repo if specified)
     :param repos: list of yum repos to enable in image
     :param store_results: if set to True, store built image and associated buildroot
@@ -35,8 +37,9 @@ def build_image(build_image, git_url, local_tag, git_dockerfile_path=None,
     if store_results:
         db.push_buildroot('localhost:5000')
         db.push_built_image('localhost:5000')
-    if target_registry:
-        db.push_built_image(target_registry, tag)
+    if target_registries:
+        for target_registry in target_registries:
+            db.push_built_image(target_registry, tag)
 
     inspect_data = db.inspect_built_image()  # dict with lots of data, see man docker-inspect
     # TODO: postbuild_data = run_postbuild_plugins(d, private_tag)
@@ -63,8 +66,9 @@ def push_image(image_name, source_registry, target_registry, tags):
 
 
 @celery.task
-def submit_results():
+def submit_results(result):
     """
     TODO: implement this
     """
     # 2 requests, one for 'finished', other for data
+    print result

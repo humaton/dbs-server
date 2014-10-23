@@ -1,6 +1,8 @@
 from threading import Thread
 from celery import Celery
 
+from dbs_worker.docker_tasks import build_image as build_image_celery, submit_results
+
 import celeryconfig
 
 
@@ -38,7 +40,7 @@ class TaskApi(object):
         self.client.config_from_object(celeryconfig)
 
     def build_docker_image(self, build_image, git_url, local_tag, git_dockerfile_path=None, git_commit=None,
-                           source_registry=None, target_registry=None, tag=None, repos=None,
+                           source_registry=None, target_registries=None, tag=None, repos=None,
                            callback=None, kwargs=None):
         """
         build docker image from supplied git repo
@@ -53,7 +55,7 @@ class TaskApi(object):
         :param git_dockerfile_path: path to dockerfile within git repo (default is ./Dockerfile)
         :param git_commit: which commit to checkout (master by default)
         :param source_registry: pull base image from this registry
-        :param target_registry: push built image to this registry
+        :param target_registries: list of urls where built image will be pushed
         :param tag: tag image with this tag (and push it to target_repo if specified)
         :param repos: list of yum repos to enable in image
         :param callback: function to call when task finishes, it has to accept at least
@@ -64,12 +66,13 @@ class TaskApi(object):
         """
         args = [build_image, git_url, local_tag]
         task_kwargs = {'source_registry': source_registry,
-                       'target_registry': target_registry,
+                       'target_registries': target_registries,
                        'tag': tag,
                        'git_commit': git_commit,
                        'git_dockerfile_path': git_dockerfile_path,
                        'repos': repos}
-        task_info = self.client.send_task('docker_tasks.build_image', args=args, kwargs=task_kwargs)
+        task_info = build_image_celery.apply_async(args=args, kwargs=task_kwargs,
+                                                   link=submit_results.s())
         task_id = task_info.task_id
         if callback:
             t = Thread(target=watch_task, args=(task_info, callback, kwargs))
@@ -80,7 +83,7 @@ class TaskApi(object):
     def find_dockerfiles_in_git(self):
         raise NotImplemented()
 
-    def push_docker_image(self, image_name, source_registry, target_registry, tags, callback, kwargs):
+    def push_docker_image(self, image_name, source_registry, target_registry, tags, callback=None, kwargs=None):
         """
         pull docker image from source registry, tag it with multiple tags and push it to tagrget registry
 
