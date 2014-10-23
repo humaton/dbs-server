@@ -1,0 +1,706 @@
+[
+{
+  "fields": {
+    "model": "logentry",
+    "name": "log entry",
+    "app_label": "admin"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 1
+},
+{
+  "fields": {
+    "model": "permission",
+    "name": "permission",
+    "app_label": "auth"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 2
+},
+{
+  "fields": {
+    "model": "group",
+    "name": "group",
+    "app_label": "auth"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 3
+},
+{
+  "fields": {
+    "model": "user",
+    "name": "user",
+    "app_label": "auth"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 4
+},
+{
+  "fields": {
+    "model": "contenttype",
+    "name": "content type",
+    "app_label": "contenttypes"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 5
+},
+{
+  "fields": {
+    "model": "session",
+    "name": "session",
+    "app_label": "sessions"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 6
+},
+{
+  "fields": {
+    "model": "taskdata",
+    "name": "task data",
+    "app_label": "dbs"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 7
+},
+{
+  "fields": {
+    "model": "task",
+    "name": "task",
+    "app_label": "dbs"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 8
+},
+{
+  "fields": {
+    "model": "rpms",
+    "name": "rpms",
+    "app_label": "dbs"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 9
+},
+{
+  "fields": {
+    "model": "registry",
+    "name": "registry",
+    "app_label": "dbs"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 10
+},
+{
+  "fields": {
+    "model": "yumrepo",
+    "name": "yum repo",
+    "app_label": "dbs"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 11
+},
+{
+  "fields": {
+    "model": "image",
+    "name": "image",
+    "app_label": "dbs"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 12
+},
+{
+  "fields": {
+    "model": "imageregistryrelation",
+    "name": "image registry relation",
+    "app_label": "dbs"
+  },
+  "model": "contenttypes.contenttype",
+  "pk": 13
+},
+{
+  "fields": {
+    "json": "{\"git_dockerfile_path\": \"project/Dockerfile\", \"git_url\": \"/home/joe/somerepo.git\", \"git_commit\": \"HEAD\"}"
+  },
+  "model": "dbs.taskdata",
+  "pk": 1
+},
+{
+  "fields": {
+    "json": "{\"git_dockerfile_path\": \"project/Dockerfile\", \"git_url\": \"/home/joe/somerepo.git\", \"git_commit\": \"HEAD\"}"
+  },
+  "model": "dbs.taskdata",
+  "pk": 2
+},
+{
+  "fields": {
+    "json": "{\"git_dockerfile_path\": \"project/Dockerfile\", \"git_url\": \"/home/joe/somerepo.git\", \"git_commit\": \"HEAD\"}"
+  },
+  "model": "dbs.taskdata",
+  "pk": 3
+},
+{
+  "fields": {
+    "status": 4,
+    "task_data": 1,
+    "date_finished": "2014-05-10T15:31:13Z",
+    "type": 1,
+    "owner": "joe",
+    "date_started": "2014-05-10T15:31:13Z",
+    "builddev_id": "sadfasdf"
+  },
+  "model": "dbs.task",
+  "pk": 1
+},
+{
+  "fields": {
+    "status": 4,
+    "task_data": 2,
+    "date_finished": "2014-05-10T15:31:13Z",
+    "type": 1,
+    "owner": "joe",
+    "date_started": "2014-05-10T15:31:23Z",
+    "builddev_id": "dfgsddfg"
+  },
+  "model": "dbs.task",
+  "pk": 2
+},
+{
+  "fields": {
+    "status": 4,
+    "task_data": 3,
+    "date_finished": "2014-05-10T15:31:13Z",
+    "type": 1,
+    "owner": "joe",
+    "date_started": "2014-05-10T15:36:13Z",
+    "builddev_id": "wefsdfsdf"
+  },
+  "model": "dbs.task",
+  "pk": 3
+},
+{
+  "fields": {
+    "component": "elfutils",
+    "nvr": "elfutils-0.160-1.fc21.x86_64"
+  },
+  "model": "dbs.rpms",
+  "pk": 1
+},
+{
+  "fields": {
+    "component": "libatasmart",
+    "nvr": "libatasmart-0.19-7.fc21.x86_64"
+  },
+  "model": "dbs.rpms",
+  "pk": 2
+},
+{
+  "fields": {
+    "component": "libwayland-cursor",
+    "nvr": "libwayland-cursor-1.6.0-1.fc21.x86_64"
+  },
+  "model": "dbs.rpms",
+  "pk": 3
+},
+{
+  "fields": {
+    "component": "boost",
+    "nvr": "boost-chrono-1.55.0-3.fc21.x86_64"
+  },
+  "model": "dbs.rpms",
+  "pk": 4
+},
+{
+  "fields": {
+    "component": "python-hawkey",
+    "nvr": "python-hawkey-0.5.1-1.fc21.x86_64"
+  },
+  "model": "dbs.rpms",
+  "pk": 5
+},
+{
+  "fields": {
+    "component": "alsa",
+    "nvr": "alsa-lib-1.0.28-2.fc21.x86_64"
+  },
+  "model": "dbs.rpms",
+  "pk": 6
+},
+{
+  "fields": {
+    "component": "boost",
+    "nvr": "boost-graph-1.55.0-3.fc21.x86_64"
+  },
+  "model": "dbs.rpms",
+  "pk": 7
+},
+{
+  "fields": {
+    "component": "libcurl",
+    "nvr": "libcurl-7.37.0-7.fc21.x86_64"
+  },
+  "model": "dbs.rpms",
+  "pk": 8
+},
+{
+  "fields": {
+    "component": "pixman",
+    "nvr": "pixman-0.32.6-3.fc21.x86_64"
+  },
+  "model": "dbs.rpms",
+  "pk": 9
+},
+{
+  "fields": {
+    "component": "boost",
+    "nvr": "boost-atomic-1.55.0-3.fc21.x86_64"
+  },
+  "model": "dbs.rpms",
+  "pk": 10
+},
+{
+  "fields": {
+    "url": "internal.reg1.example.com"
+  },
+  "model": "dbs.registry",
+  "pk": 1
+},
+{
+  "fields": {
+    "url": "external.reg2.example.com"
+  },
+  "model": "dbs.registry",
+  "pk": 2
+},
+{
+  "fields": {
+    "url": "internal1.example.com"
+  },
+  "model": "dbs.yumrepo",
+  "pk": 1
+},
+{
+  "fields": {
+    "url": "internal2.example.com"
+  },
+  "model": "dbs.yumrepo",
+  "pk": 2
+},
+{
+  "fields": {
+    "url": "internal3.example.com"
+  },
+  "model": "dbs.yumrepo",
+  "pk": 3
+},
+{
+  "fields": {
+    "status": 1,
+    "rpms": [
+      1,
+      7,
+      8,
+      9,
+      10
+    ],
+    "base_registry": 1,
+    "base_tag": "fedora-postgresql92",
+    "registries": []
+  },
+  "model": "dbs.image",
+  "pk": "15b343ce5104869756e56f77651d80ceafe91d23c29108839882fb064cc853dd"
+},
+{
+  "fields": {
+    "status": 1,
+    "rpms": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "base_registry": 2,
+    "base_tag": "fedora-mongodb24",
+    "registries": [
+      1
+    ]
+  },
+  "model": "dbs.image",
+  "pk": "da760eacd8cb2ae358cdbd0d7717364e72d9ebd5a8519a84248639ae2fa5a7b1"
+},
+{
+  "fields": {
+    "status": 1,
+    "rpms": [
+      3,
+      4,
+      5,
+      9
+    ],
+    "base_registry": 1,
+    "base_tag": "fedora-python33",
+    "registries": []
+  },
+  "model": "dbs.image",
+  "pk": "dcd5aacef39b72893a4382f48efbba878d9398e796151eb09ccc82ad27098535"
+},
+{
+  "fields": {
+    "image": "da760eacd8cb2ae358cdbd0d7717364e72d9ebd5a8519a84248639ae2fa5a7b1",
+    "tag": "sometag-12",
+    "registry": 1
+  },
+  "model": "dbs.imageregistryrelation",
+  "pk": 1
+},
+{
+  "fields": {
+    "codename": "add_logentry",
+    "name": "Can add log entry",
+    "content_type": 1
+  },
+  "model": "auth.permission",
+  "pk": 1
+},
+{
+  "fields": {
+    "codename": "change_logentry",
+    "name": "Can change log entry",
+    "content_type": 1
+  },
+  "model": "auth.permission",
+  "pk": 2
+},
+{
+  "fields": {
+    "codename": "delete_logentry",
+    "name": "Can delete log entry",
+    "content_type": 1
+  },
+  "model": "auth.permission",
+  "pk": 3
+},
+{
+  "fields": {
+    "codename": "add_permission",
+    "name": "Can add permission",
+    "content_type": 2
+  },
+  "model": "auth.permission",
+  "pk": 4
+},
+{
+  "fields": {
+    "codename": "change_permission",
+    "name": "Can change permission",
+    "content_type": 2
+  },
+  "model": "auth.permission",
+  "pk": 5
+},
+{
+  "fields": {
+    "codename": "delete_permission",
+    "name": "Can delete permission",
+    "content_type": 2
+  },
+  "model": "auth.permission",
+  "pk": 6
+},
+{
+  "fields": {
+    "codename": "add_group",
+    "name": "Can add group",
+    "content_type": 3
+  },
+  "model": "auth.permission",
+  "pk": 7
+},
+{
+  "fields": {
+    "codename": "change_group",
+    "name": "Can change group",
+    "content_type": 3
+  },
+  "model": "auth.permission",
+  "pk": 8
+},
+{
+  "fields": {
+    "codename": "delete_group",
+    "name": "Can delete group",
+    "content_type": 3
+  },
+  "model": "auth.permission",
+  "pk": 9
+},
+{
+  "fields": {
+    "codename": "add_user",
+    "name": "Can add user",
+    "content_type": 4
+  },
+  "model": "auth.permission",
+  "pk": 10
+},
+{
+  "fields": {
+    "codename": "change_user",
+    "name": "Can change user",
+    "content_type": 4
+  },
+  "model": "auth.permission",
+  "pk": 11
+},
+{
+  "fields": {
+    "codename": "delete_user",
+    "name": "Can delete user",
+    "content_type": 4
+  },
+  "model": "auth.permission",
+  "pk": 12
+},
+{
+  "fields": {
+    "codename": "add_contenttype",
+    "name": "Can add content type",
+    "content_type": 5
+  },
+  "model": "auth.permission",
+  "pk": 13
+},
+{
+  "fields": {
+    "codename": "change_contenttype",
+    "name": "Can change content type",
+    "content_type": 5
+  },
+  "model": "auth.permission",
+  "pk": 14
+},
+{
+  "fields": {
+    "codename": "delete_contenttype",
+    "name": "Can delete content type",
+    "content_type": 5
+  },
+  "model": "auth.permission",
+  "pk": 15
+},
+{
+  "fields": {
+    "codename": "add_session",
+    "name": "Can add session",
+    "content_type": 6
+  },
+  "model": "auth.permission",
+  "pk": 16
+},
+{
+  "fields": {
+    "codename": "change_session",
+    "name": "Can change session",
+    "content_type": 6
+  },
+  "model": "auth.permission",
+  "pk": 17
+},
+{
+  "fields": {
+    "codename": "delete_session",
+    "name": "Can delete session",
+    "content_type": 6
+  },
+  "model": "auth.permission",
+  "pk": 18
+},
+{
+  "fields": {
+    "codename": "add_taskdata",
+    "name": "Can add task data",
+    "content_type": 7
+  },
+  "model": "auth.permission",
+  "pk": 19
+},
+{
+  "fields": {
+    "codename": "change_taskdata",
+    "name": "Can change task data",
+    "content_type": 7
+  },
+  "model": "auth.permission",
+  "pk": 20
+},
+{
+  "fields": {
+    "codename": "delete_taskdata",
+    "name": "Can delete task data",
+    "content_type": 7
+  },
+  "model": "auth.permission",
+  "pk": 21
+},
+{
+  "fields": {
+    "codename": "add_task",
+    "name": "Can add task",
+    "content_type": 8
+  },
+  "model": "auth.permission",
+  "pk": 22
+},
+{
+  "fields": {
+    "codename": "change_task",
+    "name": "Can change task",
+    "content_type": 8
+  },
+  "model": "auth.permission",
+  "pk": 23
+},
+{
+  "fields": {
+    "codename": "delete_task",
+    "name": "Can delete task",
+    "content_type": 8
+  },
+  "model": "auth.permission",
+  "pk": 24
+},
+{
+  "fields": {
+    "codename": "add_rpms",
+    "name": "Can add rpms",
+    "content_type": 9
+  },
+  "model": "auth.permission",
+  "pk": 25
+},
+{
+  "fields": {
+    "codename": "change_rpms",
+    "name": "Can change rpms",
+    "content_type": 9
+  },
+  "model": "auth.permission",
+  "pk": 26
+},
+{
+  "fields": {
+    "codename": "delete_rpms",
+    "name": "Can delete rpms",
+    "content_type": 9
+  },
+  "model": "auth.permission",
+  "pk": 27
+},
+{
+  "fields": {
+    "codename": "add_registry",
+    "name": "Can add registry",
+    "content_type": 10
+  },
+  "model": "auth.permission",
+  "pk": 28
+},
+{
+  "fields": {
+    "codename": "change_registry",
+    "name": "Can change registry",
+    "content_type": 10
+  },
+  "model": "auth.permission",
+  "pk": 29
+},
+{
+  "fields": {
+    "codename": "delete_registry",
+    "name": "Can delete registry",
+    "content_type": 10
+  },
+  "model": "auth.permission",
+  "pk": 30
+},
+{
+  "fields": {
+    "codename": "add_yumrepo",
+    "name": "Can add yum repo",
+    "content_type": 11
+  },
+  "model": "auth.permission",
+  "pk": 31
+},
+{
+  "fields": {
+    "codename": "change_yumrepo",
+    "name": "Can change yum repo",
+    "content_type": 11
+  },
+  "model": "auth.permission",
+  "pk": 32
+},
+{
+  "fields": {
+    "codename": "delete_yumrepo",
+    "name": "Can delete yum repo",
+    "content_type": 11
+  },
+  "model": "auth.permission",
+  "pk": 33
+},
+{
+  "fields": {
+    "codename": "add_image",
+    "name": "Can add image",
+    "content_type": 12
+  },
+  "model": "auth.permission",
+  "pk": 34
+},
+{
+  "fields": {
+    "codename": "change_image",
+    "name": "Can change image",
+    "content_type": 12
+  },
+  "model": "auth.permission",
+  "pk": 35
+},
+{
+  "fields": {
+    "codename": "delete_image",
+    "name": "Can delete image",
+    "content_type": 12
+  },
+  "model": "auth.permission",
+  "pk": 36
+},
+{
+  "fields": {
+    "codename": "add_imageregistryrelation",
+    "name": "Can add image registry relation",
+    "content_type": 13
+  },
+  "model": "auth.permission",
+  "pk": 37
+},
+{
+  "fields": {
+    "codename": "change_imageregistryrelation",
+    "name": "Can change image registry relation",
+    "content_type": 13
+  },
+  "model": "auth.permission",
+  "pk": 38
+},
+{
+  "fields": {
+    "codename": "delete_imageregistryrelation",
+    "name": "Can delete image registry relation",
+    "content_type": 13
+  },
+  "model": "auth.permission",
+  "pk": 39
+}
+]
