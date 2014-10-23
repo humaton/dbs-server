@@ -36,7 +36,7 @@ Docker Build Service
 
 %build
 # prepare config file
-rm dbs/site_settings-development.py
+rm dbs/site_settings.py
 mv dbs/site_settings-production.py site_settings
 
 # move wsgi to document root
