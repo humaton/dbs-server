@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Images</h1>
+<table class="datatable table table-striped table-bordered">
+<thead>
+    <tr>
+        <th>ID</th>
+        <th>Base image</th>
+        <th>Repos/Tags</th>
+        <th>Status</th>
+        <th>Info</th>
+        <th>Logs</th>
+    </tr>
+</thead>
+<tbody>
+{% for image in image_list %}
+    <tr>
+        <td><a href="info.html">{{ image.hash }}</a></td>
+        <td>{{ image.base_tag }}</td>
+        <td>uglystuff uglystuff:21.0</td>
+        <td class="center success">{{ image.get_status }}</td>
+        <td class="center">Packages: {{ image.rpms.count }}</td>
+        <td class="center"><a href="#">show logs</a>	</td>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% endblock %}

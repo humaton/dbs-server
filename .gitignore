@@ -1,0 +1,7 @@
+dbs/site_settings.py
+rel-eng/releasers.conf
+data/db.sqlite3
+*.py[co]
+dbs-*.tar.gz
+*.swp
+secret_key

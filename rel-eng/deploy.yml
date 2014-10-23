@@ -1,0 +1,40 @@
+---
+- hosts: dbs
+  remote_user: fedora
+  tasks:
+    - name: Install packages
+      sudo: yes
+      yum: name={{ item }} state=latest
+      with_items:
+        - python-django
+        - GitPython
+        - rabbitmq-server
+        - python-celery
+        - python-redis
+        - redis
+        - python-docker-py
+        - docker-io
+        - docker-registry
+
+    - name: Start services
+      sudo: yes
+      service: name={{ item }} state=started
+      with_items:
+        - docker
+        - rabbitmq-server
+        - redis
+
+    - name: Clone git repo
+      git: repo=https://github.com/sYnfo/dbs.git dest=/home/fedora/dbs
+
+    - name: Build build-docker image
+      sudo: yes
+      shell: setenforce 0 &&
+             cd /home/fedora/dbs/dbs-builder/dbs_builder/builder-image &&
+             docker build --rm -t buildroot-fedora .
+
+    - name: install dbs-builder package
+      sudo: yes
+      shell: cd /home/fedora/dbs/dbs-builder && python setup.py install
+
+# create db

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="ie8"><![endif]-->
+<!--[if IE 9]><html class="ie9"><![endif]-->
+<!--[if gt IE 9]><!-->
+<html>
+<!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <title>DBS - Build Your Layers</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="./img/favicon.ico">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="./html5shiv.min.js"></script>
+    <script src="./respond.min.js"></script>
+    <![endif]-->
+    <!-- IE8 requires jQuery and Bootstrap JS to load in head to prevent rendering bugs -->
+    <!-- IE8 requires jQuery v1.x -->
+    <script src="./js/jquery-1.10.2.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/jquery.dataTables.js"></script>
+    <script src="./js/patternfly.min.js"></script>
+    <script>
+      // Initialize Datatables
+      $(document).ready( function() {
+        $('.datatable').dataTable();
+      });
+    </script>
+    <link href="./css/patternfly.css" rel="stylesheet" media="screen, print">
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-pf" role="navigation">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse-1">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">
+          DBS Build Service
+        </a>
+      </div>
+      <div class="collapse navbar-collapse navbar-collapse-1">
+        <ul class="nav navbar-nav navbar-utility">
+          <li>
+          <form class="form-inline">
+            <div class="form-group">
+              <select class="combobox form-control" name="inline">
+                <option selected="selected" value="image">Images</option>
+                <option value="task">Tasks</option>
+                <option value="package">Packages</option>
+              </select>
+            </div>
+            <div class="form-group has-clear">
+              <div class="search-pf-input-group">
+                <label for="search2" class="sr-only">Search</label>
+                <input id="search2" type="search" class="form-control" placeholder="Search">
+                <button type="button" class="clear" aria-hidden="true">Search</button>
+              </div>
+            </div>
+          </form>
+          </li>
+          <li>
+            <a href="#">My Tasks</a>
+          </li>
+          <li>
+            <a href="#">Images Built By Me</a>
+          </li>
+          <li>
+            <a href="#">JSON API</a>
+          </li>
+          <li>
+            <a href="#">Help</a>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              <span class="pficon pficon-user"></span>
+              Jim Red Hatter <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a href="#">Personal Info</a>
+              </li>
+              <li class="divider"></li>
+              <li>
+                <a href="#">Log out</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-primary">
+          <li>
+            <a href="table.html">Tasks</a>
+          </li>
+          <li>
+            <a href="table.html">Images</a>
+          </li>
+          <li class="active">
+            <a href="newtask.html">Build a New Image</a>
+          </li>
+          <li>
+            <a href="newtask.html">Move Image</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          <ol class="breadcrumb">
+            <li><a href="#">Home</a></li>
+            <li>New Task</li>
+          </ol>
+
+<!-- main content -->
+
+          <h1>Submit a New Task</h1>
+
+          <form class="form-horizontal" action="status.html" method="get">
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="textInput-markup">User name</label>
+              <div class="col-sm-10">
+                <input type="text" id="textInput-markup" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="textInput-markup">Tags for Image</label>
+              <div class="col-sm-10">
+                <input type="text" id="textInput-markup" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="textInput-markup">Registres to push</label>
+              <div class="col-sm-10">
+                <input type="text" id="textInput-markup" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="textInput-markup">Git URL</label>
+              <div class="col-sm-10">
+                <input type="text" id="textInput-markup" class="form-control">
+              </div>
+            </div>
+            <div class="form-group has-error">
+              <label class="col-sm-2 control-label" for="inputError-markup">Git Path to the Dockerfile</label>
+              <div class="col-sm-10">
+                <input type="text" id="textInput-markup" class="form-control">
+                <span class="help-block">Please enter full URL</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="textInput-markup">Git Commit (default: HEAD)</label>
+              <div class="col-sm-10">
+                <input type="text" id="textInput-markup" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="textInput-markup">JSON with Data (will override all previous values)</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" rows="6"></textarea>
+              </div>
+            </div>
+            <div class="form-group has-error">
+              <label class="col-sm-2 control-label" for="textInput-markup"></label>
+              <div class="col-sm-10">
+              <button class="btn btn-lg btn-success" type="submit">Submit task</button>
+              </div>
+            </div>
+          </form>
+
+<!-- end of main content -->
+
+        </div><!-- /col -->
+      </div><!-- /row -->
+    </div><!-- /container -->
+    <p class="panel-footer">This is an open-source project is early development stage. <a href="https://github.com/sYnfo/dbs">Get sources</a>
+    or <a href="https://github.com/sYnfo/dbs/issues/new">report a bug</a>. &copy; Red Hat, 2014</p>
+  </body>
+</html>
