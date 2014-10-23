@@ -1,15 +1,20 @@
 from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
 
+from dbs_builder.task_api import TaskApi
+
 import json
 import copy
 
 from django.http import HttpResponse
 from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 from ..models import TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
 
 def JsonResponse(response):
     return HttpResponse(json.dumps(response), content_type="application/json")
+
+builder_api = TaskApi()
 
 @require_GET
 def list_tasks(request):
@@ -103,13 +108,73 @@ def task_status(request, task_id):
 
     return JsonResponse(response)
 
+
+def validate_rest_input(required_args, optional_args, request):
+    # request.body -- requets sent as json
+    # request.POST -- sent as application/*form*
+    data_sources = [request.POST]
+    try:
+        data_sources.append(json.loads(request.body))
+    except ValueError:
+        pass
+    req_is_valid = False
+    for source in data_sources:
+        for req_arg in required_args:
+            try:
+                source[req_arg]
+            except KeyError:
+                req_is_valid = False
+                break
+            req_is_valid = True
+        if req_is_valid:
+            break
+    if not req_is_valid and required_args:
+        raise RuntimeError("request is missing '%s'" % req_arg)
+    for arg in source:
+        if arg not in optional_args and arg not in required_args:
+            raise RuntimeError("Invalid argument '%s' supplied" % arg)
+    return source
+
+
+def translate_args(translation_dict, values):
+    """
+    translate keys in dict values using translation_dict
+    """
+    response = {}
+    for key, value in values.items():
+        try:
+            response[translation_dict[key]] = value
+        except KeyError:
+            response[key] = value
+    return response
+
+
+@csrf_exempt
 @require_POST
 def new_image(request):
-    return HttpResponse("new image")
+    required_args = ['git_url', ]
+    optional_args = ['git_dockerfile_path', 'git_commit', 'parent_registry', 'target_registries', 'repos', 'tag']
+    translation_dict = {'parent_registry': 'source_registry'}
+    args = validate_rest_input(required_args, optional_args, request)
+    translated_args = translate_args(translation_dict, args)
 
+    # TODO: if there is slash / in here, it fails to push the image
+    local_tag = 'user-project'  # FIXME
+
+    translated_args.update({'build_image': "buildroot-fedora", 'local_tag': local_tag})
+    task_id = builder_api.build_docker_image(**translated_args)
+    print(task_id)
+    return JsonResponse({'task_id': task_id})
+
+@csrf_exempt
 @require_POST
 def move_image(request, image_id):
-    return HttpResponse("move image {}".format(image_id))
+    required_args = ['source_registry', 'target_registry', 'tags']
+    args = validate_rest_input(required_args, [], request)
+    args['image_name'] = image_id
+    task_id = builder_api.push_docker_image(**args)
+    print(task_id)
+    return JsonResponse({'task_id': task_id})
 
 @require_POST
 def rebuild_image(request, image_id):
