@@ -24,7 +24,7 @@ systemctl start redis.service
 ### Registry
 
 ```
-systemctl start docker-registry.serivce
+systemctl start docker-registry.service
 ```
 
 ### Celery
