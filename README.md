@@ -10,7 +10,7 @@ Setup
 ## Install dependencies:
 
 ```
-dnf install python-celery python-redis redis python-docker-py docker-io docker-registry
+dnf install python-celery python-redis redis python-docker-py docker-io docker-registry GitPython
 ```
 
 ## Start services:
