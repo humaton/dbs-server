@@ -40,7 +40,7 @@ class TaskApi(object):
         self.client.config_from_object(celeryconfig)
 
     def build_docker_image(self, build_image, git_url, local_tag, git_dockerfile_path=None, git_commit=None,
-                           source_registry=None, target_registries=None, tag=None, repos=None,
+                           parent_registry=None, target_registries=None, tag=None, repos=None,
                            callback=None, kwargs=None):
         """
         build docker image from supplied git repo
@@ -54,7 +54,7 @@ class TaskApi(object):
         :param local_tag: image is known within the service with this tag
         :param git_dockerfile_path: path to dockerfile within git repo (default is ./Dockerfile)
         :param git_commit: which commit to checkout (master by default)
-        :param source_registry: pull base image from this registry
+        :param parent_registry: pull base image from this registry
         :param target_registries: list of urls where built image will be pushed
         :param tag: tag image with this tag (and push it to target_repo if specified)
         :param repos: list of yum repos to enable in image
@@ -64,8 +64,8 @@ class TaskApi(object):
                          callback(task_response, **kwargs)
         :return: task_id
         """
-        args = [build_image, git_url, local_tag]
-        task_kwargs = {'source_registry': source_registry,
+        args = (build_image, git_url, local_tag)
+        task_kwargs = {'parent_registry': parent_registry,
                        'target_registries': target_registries,
                        'tag': tag,
                        'git_commit': git_commit,
@@ -126,6 +126,6 @@ def desktop_callback(data):
 if __name__ == '__main__':
     t = TaskApi()
     t.build_docker_image(build_image="buildroot-fedora",
-                         git_url="https://github.com/TomasTomecek/docker-hello-world.git",
+                         git_url="github.com/TomasTomecek/docker-hello-world.git",
                          local_tag="fedora-celery-build",
                          callback=desktop_callback)
