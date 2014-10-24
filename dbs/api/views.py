@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from ..models import TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
-from ..task_api import TaskApi
+from dbs_builder.task_api import TaskApi
 
 def JsonResponse(response):
     return HttpResponse(json.dumps(response), content_type="application/json")
@@ -153,15 +153,13 @@ def translate_args(translation_dict, values):
 def new_image(request):
     required_args = ['git_url', ]
     optional_args = ['git_dockerfile_path', 'git_commit', 'parent_registry', 'target_registries', 'repos', 'tag']
-    translation_dict = {'parent_registry': 'source_registry'}
     args = validate_rest_input(required_args, optional_args, request)
-    translated_args = translate_args(translation_dict, args)
 
     # TODO: if there is slash / in here, it fails to push the image
     local_tag = 'user-project'  # FIXME
 
-    translated_args.update({'build_image': "buildroot-fedora", 'local_tag': local_tag})
-    task_id = builder_api.build_docker_image(**translated_args)
+    args.update({'build_image': "buildroot-fedora", 'local_tag': local_tag})
+    task_id = builder_api.build_docker_image(**args)
     print(task_id)
     return JsonResponse({'task_id': task_id})
 
