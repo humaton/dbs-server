@@ -69,7 +69,7 @@ class TaskApi(object):
                        'git_commit': git_commit,
                        'git_dockerfile_path': git_dockerfile_path,
                        'repos': repos}
-        task_info = self.client.send_task('docker_tasks.build_image', args=args, kwargs=task_kwargs)
+        task_info = self.client.send_task('dbs_worker.docker_tasks.build_image', args=args, kwargs=task_kwargs)
         task_id = task_info.task_id
         if callback:
             t = Thread(target=watch_task, args=(task_info, callback, kwargs))
