@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, generators, nested_scopes, pri
 
 import json
 import copy
+from datetime import datetime
+from functools import partial
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -150,6 +152,14 @@ def translate_args(translation_dict, values):
             response[key] = value
     return response
 
+def new_image_callback(task_id, image_hash):
+    t = Task.objects.filter(id=task_id).first()
+    t.date_finished = datetime.now()
+    if image_hash:
+        t.status = 4
+    else:
+        t.status = 3
+    t.save()
 
 @csrf_exempt
 @require_POST
@@ -161,7 +171,17 @@ def new_image(request):
     # TODO: if there is slash / in here, it fails to push the image
     local_tag = 'user-project'  # FIXME
 
-    args.update({'build_image': "buildroot-fedora", 'local_tag': local_tag})
+    td = TaskData(json=json.dumps(request.POST))
+    td.save()
+
+    t = Task(date_started=datetime.now(), builddev_id="buildroot-fedora", status=1,
+             type=1, owner="system", task_data=td)
+    t.save()
+
+    callback = partial(new_image_callback, t.id)
+
+    args.update({'build_image': "buildroot-fedora", 'local_tag': local_tag,
+                 'callback': callback})
     task_id = builder_api.build_docker_image(**args)
     print(task_id)
     return JsonResponse({'task_id': task_id})
