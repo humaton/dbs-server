@@ -11,7 +11,8 @@ from ..models import TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegist
 from dbs_builder.task_api import TaskApi
 
 def JsonResponse(response):
-    return HttpResponse(json.dumps(response), content_type="application/json")
+    return HttpResponse(json.dumps(response, indent=4),
+                        content_type="application/json")
 
 builder_api = TaskApi()
 
