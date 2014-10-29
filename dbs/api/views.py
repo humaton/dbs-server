@@ -4,6 +4,7 @@ import json
 import copy
 from datetime import datetime
 from functools import partial
+import socket
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -112,6 +113,11 @@ def task_status(request, task_id):
     }
     if hasattr(task, 'image'):
         response['image_id'] = task.image.hash
+        task_data = json.loads(task.task_data.json)
+        # domain = request.get_host()
+        domain = socket.gethostbyname(request.META['SERVER_NAME'])
+        response['message'] = "You can pull your image with command: 'dock pull %s:5000/%s'" % \
+                              (domain, task_data['tag'])
 
     return JsonResponse(response)
 
@@ -166,6 +172,7 @@ def new_image_callback(task_id, image_hash):
         image, _ = Image.objects.get_or_create(hash=image_id, status=1)
         parent_image, _ = Image.objects.get_or_create(hash=parent_image_id, status=4)
         image.parent = parent_image
+        image.task = t
         image.save()
         t.status = 4
     else:
