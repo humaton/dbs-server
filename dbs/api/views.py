@@ -6,16 +6,12 @@ from datetime import datetime
 from functools import partial
 import socket
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from ..models import TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
 from dbs_builder.task_api import TaskApi
-
-def JsonResponse(response):
-    return HttpResponse(json.dumps(response, indent=4),
-                        content_type="application/json")
 
 builder_api = TaskApi()
 
@@ -32,8 +28,8 @@ def list_tasks(request):
                          "finished": str(task.date_finished),
                          "builddev-id": task.builddev_id,
                         })
-        
-    return JsonResponse(response)
+
+    return JsonResponse(response, safe=False)
 
 @require_GET
 def list_images(request):
@@ -57,8 +53,8 @@ def list_images(request):
                          "rpms": copy.copy(rpms),
                          "registries": copy.copy(registries),
                         })
-        
-    return JsonResponse(response)
+
+    return JsonResponse(response, safe=False)
 
 @require_GET
 def image_status(request, image_id):
@@ -101,8 +97,8 @@ def image_info(request, image_id):
                 "registries": copy.copy(registries),
                 "parent": img.parent.hash,
                }
-        
-    return JsonResponse(response)
+
+    return JsonResponse(response, safe=False)
 
 @require_GET
 def task_status(request, task_id):
