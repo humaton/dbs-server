@@ -7,7 +7,7 @@ class TaskData(models.Model):
 
 class Task(models.Model):
     celery_id = models.CharField(max_length=42, blank=True, null=True)
-    date_started = models.DateTimeField()
+    date_started = models.DateTimeField(auto_now_add=True)
     date_finished = models.DateTimeField(null=True, blank=True)
     builddev_id = models.CharField(max_length=38)
 

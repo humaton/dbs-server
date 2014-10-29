@@ -189,7 +189,7 @@ def new_image(request):
     td = TaskData(json=json.dumps(args))
     td.save()
 
-    t = Task(date_started=datetime.now(), builddev_id="buildroot-fedora", status=1,
+    t = Task(builddev_id="buildroot-fedora", status=1,
              type=1, owner=owner, task_data=td)
     t.save()
 
