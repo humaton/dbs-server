@@ -11,10 +11,10 @@ class Task(models.Model):
     date_finished = models.DateTimeField(null=True, blank=True)
     builddev_id = models.CharField(max_length=38)
 
-    STATUS_PENDING  = 1
-    STATUS_RUNNING  = 2
-    STATUS_FAILED   = 3
-    STATUS_SUCCESS  = 4
+    STATUS_PENDING  = 'P'
+    STATUS_RUNNING  = 'R'
+    STATUS_FAILED   = 'F'
+    STATUS_SUCCESS  = 'S'
 
     _STATUS_NAMES = {
         STATUS_PENDING: 'Pending',
@@ -23,16 +23,17 @@ class Task(models.Model):
         STATUS_SUCCESS: 'Successful',
     }
 
-    status = models.IntegerField(choices=_STATUS_NAMES.items(), default=STATUS_PENDING)
+    status = models.CharField(max_length=1, choices=_STATUS_NAMES.items(),
+                default=STATUS_PENDING)
 
-    TYPE_BUILD  = 1
-    TYPE_MOVE   = 2
+    TYPE_BUILD  = 'B'
+    TYPE_MOVE   = 'M'
 
     _TYPE_NAMES = {
         TYPE_BUILD: 'Build',
         TYPE_MOVE:  'Move',
     }
-    type = models.IntegerField(choices=_TYPE_NAMES.items())
+    type = models.CharField(max_length=1, choices=_TYPE_NAMES.items())
 
     owner = models.CharField(max_length=38)
     task_data = models.ForeignKey(TaskData)
@@ -58,10 +59,10 @@ class Image(models.Model):
     parent = models.ForeignKey('self', null=True, blank=True)  # base images doesnt have parents
     task = models.OneToOneField(Task, null=True, blank=True)
 
-    STATUS_BUILD    = 1
-    STATUS_TESTING  = 2
-    STATUS_STABLE   = 3
-    STATUS_BASE     = 4
+    STATUS_BUILD    = 'B'
+    STATUS_TESTING  = 'T'
+    STATUS_STABLE   = 'S'
+    STATUS_BASE     = '_'
 
     _STATUS_NAMES = {
         STATUS_BUILD:   'Built',
@@ -69,7 +70,8 @@ class Image(models.Model):
         STATUS_STABLE:  'Pushed-Stable',
         STATUS_BASE:    'Base-Image',
     }
-    status = models.IntegerField(choices=_STATUS_NAMES.items(), default=STATUS_BUILD)
+    status = models.CharField(max_length=1, choices=_STATUS_NAMES.items(),
+                default=STATUS_BUILD)
 
     rpms = models.ManyToManyField(Rpms)  # FIXME: improve this model to: Content(type=RPM)
 

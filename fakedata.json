@@ -139,10 +139,10 @@
 },
 {
   "fields": {
-    "status": 4,
+    "status": "S",
     "task_data": 1,
     "date_finished": "2014-05-10T15:31:13Z",
-    "type": 1,
+    "type": "B",
     "owner": "joe",
     "date_started": "2014-05-10T15:31:13Z",
     "builddev_id": "sadfasdf"
@@ -152,10 +152,10 @@
 },
 {
   "fields": {
-    "status": 4,
+    "status": "S",
     "task_data": 2,
     "date_finished": "2014-05-10T15:31:13Z",
-    "type": 1,
+    "type": "B",
     "owner": "joe",
     "date_started": "2014-05-10T15:31:23Z",
     "builddev_id": "dfgsddfg"
@@ -165,10 +165,10 @@
 },
 {
   "fields": {
-    "status": 4,
+    "status": "S",
     "task_data": 3,
     "date_finished": "2014-05-10T15:31:13Z",
-    "type": 1,
+    "type": "B",
     "owner": "joe",
     "date_started": "2014-05-10T15:36:13Z",
     "builddev_id": "wefsdfsdf"
@@ -293,7 +293,7 @@
 },
 {
   "fields": {
-    "status": 1,
+    "status": "B",
     "rpms": [
       1,
       7,
@@ -310,7 +310,7 @@
 },
 {
   "fields": {
-    "status": 1,
+    "status": "B",
     "rpms": [
       1,
       2,
@@ -329,7 +329,7 @@
 },
 {
   "fields": {
-    "status": 1,
+    "status": "B",
     "rpms": [
       3,
       4,
