@@ -55,6 +55,7 @@ class Image(models.Model):
             (1, 'Built'),
             (2, 'Pushed-Testing'),
             (3, 'Pushed-Stable'),
+            (4, 'Base-Image'),
             )
     status = models.IntegerField(choices=STATUS_CHOICES)
 

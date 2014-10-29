@@ -93,12 +93,12 @@ def image_info(request, image_id):
         registries.append({"url": reg.url})
 
     response = {"hash": img.hash,
-                "base_registry": img.base_registry.url,
+                "base_registry": getattr(img.base_registry, 'url', ''),
                 "base_tag": img.base_tag,
                 "status": img.get_status_display(),
                 "rpms": copy.copy(rpms),
                 "registries": copy.copy(registries),
-                "parent": img.parent,
+                "parent": img.parent.hash,
                }
         
     return JsonResponse(response)
@@ -163,8 +163,8 @@ def new_image_callback(task_id, image_hash):
     image_id = image_hash.get('Id', None)
     parent_image_id = image_hash.get('Parent', None)
     if image_id and parent_image_id:
-        image, _ = Image.objects.get_or_create(hash=image_id)
-        parent_image, _ = Image.objects.get_or_create(hash=parent_image_id)
+        image, _ = Image.objects.get_or_create(hash=image_id, status=1)
+        parent_image, _ = Image.objects.get_or_create(hash=parent_image_id, status=4)
         image.parent = parent_image
         image.save()
         t.status = 4
