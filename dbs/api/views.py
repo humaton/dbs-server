@@ -45,14 +45,15 @@ def list_images(request):
         registries = []
         for reg in img.registries.all():
             registries.append({"url": reg.url})
-
-        response.append({"hash": img.hash,
-                         "base_registry": img.base_registry.url,
-                         "base_tag": img.base_tag,
-                         "status": img.get_status_display(),
-                         "rpms": copy.copy(rpms),
-                         "registries": copy.copy(registries),
-                        })
+        response.append({
+            "hash": img.hash,
+            "base_registry": getattr(img.base_registry, 'url', ''),
+            "base_tag": img.base_tag,
+            "status": img.get_status_display(),
+            "rpms": copy.copy(rpms),
+            "registries": copy.copy(registries),
+            "parent": getattr(img.parent, 'hash', '')
+        })
 
     return JsonResponse(response, safe=False)
 
