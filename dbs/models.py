@@ -11,28 +11,37 @@ class Task(models.Model):
     date_finished = models.DateTimeField(null=True, blank=True)
     builddev_id = models.CharField(max_length=38)
 
-    STATUS_CHOICES = (
-            (1, 'Pending'),
-            (2, 'Running'),
-            (3, 'Failed'),
-            (4, 'Successful'),
-            )
-    status = models.IntegerField(choices=STATUS_CHOICES)
+    STATUS_PENDING  = 1
+    STATUS_RUNNING  = 2
+    STATUS_FAILED   = 3
+    STATUS_SUCCESS  = 4
 
-    TYPE_CHOICES = (
-            (1, 'Build'),
-            (2, 'Move'),
-            )
-    type = models.IntegerField(choices=TYPE_CHOICES)
+    _STATUS_NAMES = {
+        STATUS_PENDING: 'Pending',
+        STATUS_RUNNING: 'Running',
+        STATUS_FAILED:  'Failed',
+        STATUS_SUCCESS: 'Successful',
+    }
+
+    status = models.IntegerField(choices=_STATUS_NAMES.items())
+
+    TYPE_BUILD  = 1
+    TYPE_MOVE   = 2
+
+    _TYPE_NAMES = {
+        TYPE_BUILD: 'Build',
+        TYPE_MOVE:  'Move',
+    }
+    type = models.IntegerField(choices=_TYPE_NAMES.items())
 
     owner = models.CharField(max_length=38)
     task_data = models.ForeignKey(TaskData)
 
     def get_type(self):
-        return dict(self.TYPE_CHOICES)[self.type]
+        return self._TYPE_NAMES[self.type]
 
     def get_status(self):
-        return dict(self.STATUS_CHOICES)[self.status]
+        return self._STATUS_NAMES[self.status]
 
 class Rpms(models.Model):
     nvr = models.CharField(max_length=38)
@@ -51,19 +60,24 @@ class Image(models.Model):
     parent = models.ForeignKey('self', null=True, blank=True)
     task = models.OneToOneField(Task, null=True, blank=True)
 
-    STATUS_CHOICES = (
-            (1, 'Built'),
-            (2, 'Pushed-Testing'),
-            (3, 'Pushed-Stable'),
-            (4, 'Base-Image'),
-            )
-    status = models.IntegerField(choices=STATUS_CHOICES)
+    STATUS_BUILD    = 1
+    STATUS_TESTING  = 2
+    STATUS_STABLE   = 3
+    STATUS_BASE     = 4
+
+    _STATUS_NAMES = {
+        STATUS_BUILD:   'Built',
+        STATUS_TESTING: 'Pushed-Testing',
+        STATUS_STABLE:  'Pushed-Stable',
+        STATUS_BASE:    'Base-Image',
+    }
+    status = models.IntegerField(choices=_STATUS_NAMES.items())
 
     rpms = models.ManyToManyField(Rpms)
     registries = models.ManyToManyField(Registry)
 
     def get_status(self):
-        return dict(self.STATUS_CHOICES)[self.status]
+        return self._STATUS_NAMES[self.status]
 
 
 

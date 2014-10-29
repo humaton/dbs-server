@@ -166,14 +166,14 @@ def new_image_callback(task_id, image_hash):
     image_id = image_hash.get('Id', None)
     parent_image_id = image_hash.get('Parent', None)
     if image_id and parent_image_id:
-        image, _ = Image.objects.get_or_create(hash=image_id, status=1)
-        parent_image, _ = Image.objects.get_or_create(hash=parent_image_id, status=4)
+        image, _ = Image.objects.get_or_create(hash=image_id, status=Image.STATUS_BUILD)
+        parent_image, _ = Image.objects.get_or_create(hash=parent_image_id, status=Image.STATUS_BASE)
         image.parent = parent_image
         image.task = t
         image.save()
-        t.status = 4
+        t.status = Task.STATUS_SUCCESS
     else:
-        t.status = 3
+        t.status = Task.STATUS_FAILED
     t.save()
 
 @csrf_exempt
@@ -189,8 +189,8 @@ def new_image(request):
     td = TaskData(json=json.dumps(args))
     td.save()
 
-    t = Task(builddev_id="buildroot-fedora", status=1,
-             type=1, owner=owner, task_data=td)
+    t = Task(builddev_id="buildroot-fedora", status=Task.STATUS_PENDING,
+             type=Task.TYPE_BUILD, owner=owner, task_data=td)
     t.save()
 
     callback = partial(new_image_callback, t.id)
