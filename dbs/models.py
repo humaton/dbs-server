@@ -6,6 +6,7 @@ class TaskData(models.Model):
     json = models.TextField()
 
 class Task(models.Model):
+    celery_id = models.CharField(max_length=42, blank=True, null=True)
     date_started = models.DateTimeField()
     date_finished = models.DateTimeField(null=True, blank=True)
     builddev_id = models.CharField(max_length=38)
@@ -45,8 +46,10 @@ class YumRepo(models.Model):
 
 class Image(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
-    base_registry = models.ForeignKey(Registry, related_name='base')
-    base_tag = models.CharField(max_length=38)
+    base_registry = models.ForeignKey(Registry, related_name='base', null=True, blank=True)
+    base_tag = models.CharField(max_length=38, null=True, blank=True)
+    parent = models.ForeignKey('self', null=True, blank=True)
+    task = models.OneToOneField(Task, null=True, blank=True)
 
     STATUS_CHOICES = (
             (1, 'Built'),

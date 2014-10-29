@@ -98,6 +98,7 @@ def image_info(request, image_id):
                 "status": img.get_status_display(),
                 "rpms": copy.copy(rpms),
                 "registries": copy.copy(registries),
+                "parent": img.parent,
                }
         
     return JsonResponse(response)
@@ -105,8 +106,12 @@ def image_info(request, image_id):
 @require_GET
 def task_status(request, task_id):
     task = Task.objects.filter(id=task_id).first()
-    response = {"image_id": task_id,
-                "status": task.get_status_display()}
+    response = {
+        "task_id": task_id,
+        "status": task.get_status_display()
+    }
+    if hasattr(task, 'image'):
+        response['image_id'] = task.image.hash
 
     return JsonResponse(response)
 
@@ -155,7 +160,13 @@ def translate_args(translation_dict, values):
 def new_image_callback(task_id, image_hash):
     t = Task.objects.filter(id=task_id).first()
     t.date_finished = datetime.now()
-    if image_hash:
+    image_id = image_hash.get('Id', None)
+    parent_image_id = image_hash.get('Parent', None)
+    if image_id and parent_image_id:
+        image, _ = Image.objects.get_or_create(hash=image_id)
+        parent_image, _ = Image.objects.get_or_create(hash=parent_image_id)
+        image.parent = parent_image
+        image.save()
         t.status = 4
     else:
         t.status = 3
@@ -164,18 +175,18 @@ def new_image_callback(task_id, image_hash):
 @csrf_exempt
 @require_POST
 def new_image(request):
-    required_args = ['git_url', ]
-    optional_args = ['git_dockerfile_path', 'git_commit', 'parent_registry', 'target_registries', 'repos', 'tag']
+    required_args = ['git_url', 'tag']
+    optional_args = ['git_dockerfile_path', 'git_commit', 'parent_registry', 'target_registries', 'repos']
     args = validate_rest_input(required_args, optional_args, request)
 
-    # TODO: if there is slash / in here, it fails to push the image
-    local_tag = 'user-project'  # FIXME
+    owner = "testuser"  # XXX: hardcoded
+    local_tag = "%s/%s" % (owner, args['tag'])
 
-    td = TaskData(json=json.dumps(request.POST))
+    td = TaskData(json=json.dumps(args))
     td.save()
 
     t = Task(date_started=datetime.now(), builddev_id="buildroot-fedora", status=1,
-             type=1, owner="system", task_data=td)
+             type=1, owner=owner, task_data=td)
     t.save()
 
     callback = partial(new_image_callback, t.id)
@@ -183,8 +194,9 @@ def new_image(request):
     args.update({'build_image': "buildroot-fedora", 'local_tag': local_tag,
                  'callback': callback})
     task_id = builder_api.build_docker_image(**args)
-    print(task_id)
-    return JsonResponse({'task_id': task_id})
+    t.celery_id = task_id
+    t.save()
+    return JsonResponse({'task_id': t.id})
 
 @csrf_exempt
 @require_POST
