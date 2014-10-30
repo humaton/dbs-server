@@ -163,6 +163,7 @@ def translate_args(translation_dict, values):
 def new_image_callback(task_id, image_hash):
     t = Task.objects.filter(id=task_id).first()
     t.date_finished = datetime.now()
+    image_hash = image_hash or {}  # ensure image_hash is dict
     image_id = image_hash.get('Id', None)
     parent_image_id = image_hash.get('Parent', None)
     if image_id and parent_image_id:
