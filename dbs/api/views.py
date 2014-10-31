@@ -42,16 +42,15 @@ def list_images(request):
                          "component": rpm.component,
                          })
 
-        registries = []
-        for reg in img.registries.all():
-            registries.append({"url": reg.url})
+        #registries = []
+        #for reg in img.registries.all():
+        #    registries.append({"url": reg.url})
         response.append({
             "hash": img.hash,
-            "base_registry": getattr(img.base_registry, 'url', ''),
-            "base_tag": img.base_tag,
+            "tags": img.tags,
             "status": img.get_status_display(),
-            "rpms": copy.copy(rpms),
-            "registries": copy.copy(registries),
+            # "rpms": copy.copy(rpms),
+            # "registries": copy.copy(registries),
             "parent": getattr(img.parent, 'hash', '')
         })
 
@@ -86,16 +85,15 @@ def image_info(request, image_id):
                      "component": rpm.component,
                      })
 
-    registries = []
-    for reg in img.registries.all():
-        registries.append({"url": reg.url})
+    #registries = []
+    #for reg in img.registries.all():
+    #    registries.append({"url": reg.url})
 
     response = {"hash": img.hash,
-                "base_registry": getattr(img.base_registry, 'url', ''),
-                "base_tag": img.base_tag,
                 "status": img.get_status_display(),
-                "rpms": copy.copy(rpms),
-                "registries": copy.copy(registries),
+                # "rpms": copy.copy(rpms),
+                "tags": img.tags,
+                # "registries": copy.copy(registries),
                 "parent": img.parent.hash,
                }
 
@@ -160,22 +158,22 @@ def translate_args(translation_dict, values):
             response[key] = value
     return response
 
-def new_image_callback(task_id, image_hash):
+
+def new_image_callback(task_id, response_hash):
     t = Task.objects.filter(id=task_id).first()
     t.date_finished = datetime.now()
-    image_hash = image_hash or {}  # ensure image_hash is dict
-    image_id = image_hash.get('Id', None)
-    parent_image_id = image_hash.get('Parent', None)
-    if image_id and parent_image_id:
-        image, _ = Image.objects.get_or_create(hash=image_id, status=Image.STATUS_BUILD)
-        parent_image, _ = Image.objects.get_or_create(hash=parent_image_id, status=Image.STATUS_BASE)
-        image.parent = parent_image
-        image.task = t
-        image.save()
+    if response_hash:
+        image_id = response_hash['built_img_info']['Id']
+        parent_image_id = response_hash['base_img_info']['Id']
+        image_tags = response_hash['built_img_info']['RepoTags']
+        parent_tags = response_hash['base_img_info']['RepoTags']
+        parent_image = Image.create(parent_image_id, Image.STATUS_BASE, tags=parent_tags)
+        image = Image.create(image_id, Image.STATUS_BUILD, tags=image_tags, task=t, parent=parent_image)
         t.status = Task.STATUS_SUCCESS
     else:
         t.status = Task.STATUS_FAILED
     t.save()
+
 
 @csrf_exempt
 @require_POST

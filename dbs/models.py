@@ -55,9 +55,7 @@ class YumRepo(models.Model):
 
 class Image(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
-    base_registry = models.ForeignKey(Registry, related_name='base', null=True, blank=True)
-    base_tag = models.CharField(max_length=38, null=True, blank=True)
-    parent = models.ForeignKey('self', null=True, blank=True)
+    parent = models.ForeignKey('self', null=True, blank=True)  # base images doesnt have parents
     task = models.OneToOneField(Task, null=True, blank=True)
 
     STATUS_BUILD    = 1
@@ -73,15 +71,45 @@ class Image(models.Model):
     }
     status = models.IntegerField(choices=_STATUS_NAMES.items())
 
-    rpms = models.ManyToManyField(Rpms)
-    registries = models.ManyToManyField(Registry)
+    rpms = models.ManyToManyField(Rpms)  # FIXME: improve this model to: Content(type=RPM)
 
     def get_status(self):
         return self._STATUS_NAMES[self.status]
 
+    @classmethod
+    def create(cls, image_id, status, tags=None, task=None, parent=None):
+        image, _ = cls.objects.get_or_create(hash=image_id, status=status)
+        image.task = task
+        image.parent = parent
+        image.save()
+        for tag in tags:
+            t, _ = Tag.objects.get_or_create(name=tag)
+            t.save()
+            rel = ImageRegistryRelation(tag=t, image=image)
+            rel.save()
+        return image
+
+    @property
+    def tags(self):
+        return Tag.objects.for_image_as_list(self)
+
+
+class TagQuerySet(models.QuerySet):
+    def for_image(self, image):
+        return self.filter(registry_bindings__image=image)
+
+    def for_image_as_list(self, image):
+        return list(self.for_image(image).values_list('name', flat=True))
+
+
+# TODO: do relations with this
+class Tag(models.Model):
+    name = models.CharField(max_length=64)
+
+    objects = TagQuerySet.as_manager()
 
 
 class ImageRegistryRelation(models.Model):
-    tag = models.CharField(max_length=38)
+    tag = models.ForeignKey(Tag, related_name="registry_bindings")
     image = models.ForeignKey(Image)
-    registry = models.ForeignKey(Registry)
+    registry = models.ForeignKey(Registry, blank=True, null=True)
