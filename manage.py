@@ -11,7 +11,7 @@ if __name__ == "__main__":
     if os.getuid() == 0 and 'collectstatic' not in sys.argv:
         from django.conf import settings
         import pwd
-        user = pwd.getpwnam(getattr(settings, 'USERNAME', 'apache'))
+        user = pwd.getpwnam(getattr(settings, 'USERNAME', 'dbs'))
         os.setgid(user.pw_gid)
         os.setuid(user.pw_uid)
         os.environ['USER']  = user.pw_name

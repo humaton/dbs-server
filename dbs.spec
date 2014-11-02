@@ -1,9 +1,6 @@
-%bcond_without systemd
-
 %global  dbs_statedir   %{_sharedstatedir}/dbs
 %global  dbs_confdir    %{_sysconfdir}/dbs
 %global  httpd_confdir  %{_sysconfdir}/httpd/conf.d
-%global  httpd_group    apache
 
 Name:           dbs
 Version:        0.1
@@ -19,7 +16,7 @@ BuildArch:      noarch
 
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools
-%{?with_systemd:BuildRequires: systemd}
+BuildRequires:  systemd
 
 Requires:       dock
 Requires:       httpd
@@ -28,6 +25,8 @@ Requires:       mod_wsgi
 Requires:       python-celery
 Requires:       python-django >= 1.7
 Requires:       python-django-celery
+Requires(pre):  /usr/sbin/useradd
+
 
 %description
 Docker Build Service
@@ -46,6 +45,11 @@ Docker Build Service Web
 Summary:        Docker Build Service Worker
 Group:          Development Tools
 Requires:       %{name}
+Requires:       docker-io
+Requires:       systemd
+Requires(preun):    systemd-units
+Requires(postun):   systemd-units
+Requires(post):     systemd-units
 
 %description worker
 Docker Build Service Worker
@@ -89,10 +93,8 @@ install -p -D -m 0644 conf/httpd/dbs.conf \
 install -p -D -m 0644 htdocs/wsgi.py \
     %{buildroot}%{dbs_statedir}/htdocs/wsgi.py
 
-%if %{with systemd}
 # install worker unit file
 install -p -D -m 0644 conf/systemd/dbs-worker.service %{buildroot}%{_unitdir}/dbs-worker.service
-%endif
 
 # install directories for static content and site media
 install -p -d -m 0775 htdocs/static \
@@ -108,25 +110,25 @@ install -p -d -m 0775 data \
 find %{buildroot} -name "*.po" | xargs rm -f
 
 
+%pre
+# add the dbs user
+/usr/sbin/useradd -c "DBuildService" -s /sbin/nologin -r -d %{dbs_statedir} dbs 2> /dev/null || :
+
 %post
 # create secret key
-if [ ! -e        %{dbs_statedir}/secret_key ]; then
-    touch        %{dbs_statedir}/secret_key
-    chown apache %{dbs_statedir}/secret_key
-    chgrp apache %{dbs_statedir}/secret_key
-    chmod 0400   %{dbs_statedir}/secret_key
-    dd bs=1k  of=%{dbs_statedir}/secret_key if=/dev/urandom count=5
+if [ ! -e       %{dbs_statedir}/secret_key ]; then
+    touch       %{dbs_statedir}/secret_key
+    chown dbs   %{dbs_statedir}/secret_key
+    chgrp dbs   %{dbs_statedir}/secret_key
+    chmod 0400  %{dbs_statedir}/secret_key
+    dd bs=1k of=%{dbs_statedir}/secret_key if=/dev/urandom count=5
 fi
 
 # install / update database
 dbs syncdb --noinput || :
 
-# add user apache to group docker
-# TODO: create and use user dbs
-usermod -a -G docker apache || :
 
-
-%post server
+%posttrans server
 # link default certificate
 if [ ! -e               %{_sysconfdir}/pki/tls/certs/dbs.crt ]; then
     ln -s localhost.crt %{_sysconfdir}/pki/tls/certs/dbs.crt
@@ -142,20 +144,40 @@ if [ ! -e               %{_sysconfdir}/pki/tls/certs/dbs.CA.crt ]; then
     ln -s localhost.crt %{_sysconfdir}/pki/tls/certs/dbs.CA.crt
 fi
 
-service httpd condrestart
-
-# allow apache read from htdocs and secret_key
+# allow httpd read from htdocs and secret_key
 chcon    -t httpd_sys_content_t /var/lib/dbs/secret_key
 chcon    -t httpd_sys_content_t /var/lib/dbs/htdocs
 chcon    -t httpd_sys_content_t /var/lib/dbs/htdocs/wsgi.py*
 chcon -R -t httpd_sys_content_t /var/lib/dbs/htdocs/static
 
-# allow apache write to data and media
+# allow httpd write to data and media
 chcon -R -t httpd_sys_rw_content_t /var/lib/dbs/data
 chcon -R -t httpd_sys_rw_content_t /var/lib/dbs/htdocs/media
 
 # collect static files
 dbs collectstatic --noinput || :
+
+# restart httpd
+test -f /etc/sysconfig/dbs-disable-posttrans || \
+    /bin/systemctl try-restart httpd.service >/dev/null 2>&1 || :
+
+
+%post worker
+# add user dbs to group docker
+usermod -a -G docker dbs || :
+
+# run systemd stuff
+%systemd_post dbs-worker.service
+
+
+%preun worker
+# run systemd stuff
+%systemd_preun dbs-worker.service
+
+
+%postun worker
+# run systemd stuff
+%systemd_postun
 
 
 %files
@@ -163,7 +185,7 @@ dbs collectstatic --noinput || :
 %{_bindir}/dbs
 %{_sysconfdir}/bash_completion.d/dbs_bash_completion
 %config(noreplace) %{dbs_confdir}/site_settings
-%attr(775,root,%{httpd_group}) %dir %{dbs_statedir}/data
+%attr(775,root,dbs) %dir %{dbs_statedir}/data
 %{python_sitelib}/dbs
 %{python_sitelib}/dbs-%{version}-py2.*.egg-info
 
@@ -172,14 +194,12 @@ dbs collectstatic --noinput || :
 %config(noreplace) %{httpd_confdir}/dbs.conf
 %{dbs_statedir}/htdocs/wsgi.py*
 %attr(755,root,root)           %dir %{dbs_statedir}/htdocs/static
-%attr(775,root,%{httpd_group}) %dir %{dbs_statedir}/htdocs/media
+%attr(775,root,dbs) %dir %{dbs_statedir}/htdocs/media
 
 
 %files worker
 %doc README-worker.md
-%if %{with systemd}
 %{_unitdir}/dbs-worker.service
-%endif
 
 
 %changelog
