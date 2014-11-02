@@ -1,17 +1,17 @@
 from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
 
-import json
 import copy
-from datetime import datetime
-from functools import partial
+import json
 import socket
 
+from datetime import datetime
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
+from functools import partial
 
 from ..models import TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
-from dbs_builder.task_api import TaskApi
+from ..task_api import TaskApi
 
 builder_api = TaskApi()
 

@@ -1,0 +1,9 @@
+[Unit]
+Description=DBS Worker
+
+[Service]
+ExecStart=/usr/bin/dbs celery worker -l INFO
+
+[Install]
+WantedBy=multi-user.target
+

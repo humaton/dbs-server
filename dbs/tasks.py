@@ -1,16 +1,11 @@
-from celery import Celery
+from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
+
+from celery import shared_task
 from dock.core import DockerBuilder, DockerTasker
 from dock.outer import PrivilegedDockerBuilder
 
 
-import dbs_worker.celeryconfig
-
-#s/app/celery/ -- doesn't work on F20
-celery = Celery('docker_tasks')
-celery.config_from_object(dbs_worker.celeryconfig)
-
-
-@celery.task
+@shared_task
 def build_image_hostdocker(
         build_image, git_url, local_tag, git_dockerfile_path=None,
         git_commit=None, parent_registry=None, target_registries=None,
@@ -48,7 +43,7 @@ def build_image_hostdocker(
     # TODO: postbuild_data = run_postbuild_plugins(d, private_tag)
     return inspect_data
 
-@celery.task
+@shared_task
 def build_image(build_image, git_url, local_tag, git_dockerfile_path=None,
                 git_commit=None, parent_registry=None, target_registries=None,
                 tag=None, repos=None, store_results=True):
@@ -82,7 +77,7 @@ def build_image(build_image, git_url, local_tag, git_dockerfile_path=None,
     return db.build()
 
 
-@celery.task
+@shared_task
 def push_image(image_name, source_registry, target_registry, tags):
     """
     pull image from source_registry and push it to target_registry (with provided tags)
@@ -101,10 +96,11 @@ def push_image(image_name, source_registry, target_registry, tags):
         d.tag_and_push_image(final_tag, tag, registry=target_registry)
 
 
-@celery.task
+@shared_task
 def submit_results(result):
     """
     TODO: implement this
     """
     # 2 requests, one for 'finished', other for data
-    print result
+    print(result)
+

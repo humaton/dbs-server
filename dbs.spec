@@ -1,16 +1,17 @@
-%global  dbs_statedir  %{_sharedstatedir}/dbs
-%global  dbs_confdir   %{_sysconfdir}/dbs
-%global  cron_confdir  %{_sysconfdir}/cron.d
-%global  httpd_confdir %{_sysconfdir}/httpd/conf.d
-%global  httpd_group   apache
+%bcond_without systemd
 
-Name:           dbs-server
+%global  dbs_statedir   %{_sharedstatedir}/dbs
+%global  dbs_confdir    %{_sysconfdir}/dbs
+%global  httpd_confdir  %{_sysconfdir}/httpd/conf.d
+%global  httpd_group    apache
+
+Name:           dbs
 Version:        0.1
 Release:        1%{?dist}
 
 Summary:        Docker Build Service
 Group:          Development Tools
-License:        TODO
+License:        BSD
 URL:            https://github.com/orgs/DBuildService/dashboard
 Source0:        http://github.srcurl.net/DBuildService/%{name}/%{version}/%{name}-%{version}.tar.gz
 
@@ -18,7 +19,9 @@ BuildArch:      noarch
 
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools
+%{?with_systemd:BuildRequires: systemd}
 
+Requires:       dock
 Requires:       httpd
 Requires:       mod_ssl
 Requires:       mod_wsgi
@@ -28,6 +31,25 @@ Requires:       python-django-celery
 
 %description
 Docker Build Service
+
+
+%package server
+Summary:        Docker Build Service Web
+Group:          Development Tools
+Requires:       %{name}
+
+%description server
+Docker Build Service Web
+
+
+%package worker
+Summary:        Docker Build Service Worker
+Group:          Development Tools
+Requires:       %{name}
+
+%description worker
+Docker Build Service Worker
+
 
 
 %prep
@@ -67,6 +89,11 @@ install -p -D -m 0644 conf/httpd/dbs.conf \
 install -p -D -m 0644 htdocs/wsgi.py \
     %{buildroot}%{dbs_statedir}/htdocs/wsgi.py
 
+%if %{with systemd}
+# install worker unit file
+install -p -D -m 0644 conf/systemd/dbs-worker.service %{buildroot}%{_unitdir}/dbs-worker.service
+%endif
+
 # install directories for static content and site media
 install -p -d -m 0775 htdocs/static \
     %{buildroot}%{dbs_statedir}/htdocs/static
@@ -76,10 +103,6 @@ install -p -d -m 0775 htdocs/media \
 # install separate directory for sqlite db
 install -p -d -m 0775 data \
      %{buildroot}%{dbs_statedir}/data
-
-# install crontab
-#install -p -D -m 0644 conf/cron/dbs \
-#    %{buildroot}%{cron_confdir}/dbs
 
 # remove .po files
 find %{buildroot} -name "*.po" | xargs rm -f
@@ -95,6 +118,15 @@ if [ ! -e        %{dbs_statedir}/secret_key ]; then
     dd bs=1k  of=%{dbs_statedir}/secret_key if=/dev/urandom count=5
 fi
 
+# install / update database
+dbs syncdb --noinput || :
+
+# add user apache to group docker
+# TODO: create and use user dbs
+usermod -a -G docker apache || :
+
+
+%post server
 # link default certificate
 if [ ! -e               %{_sysconfdir}/pki/tls/certs/dbs.crt ]; then
     ln -s localhost.crt %{_sysconfdir}/pki/tls/certs/dbs.crt
@@ -122,26 +154,32 @@ chcon -R -t httpd_sys_content_t /var/lib/dbs/htdocs/static
 chcon -R -t httpd_sys_rw_content_t /var/lib/dbs/data
 chcon -R -t httpd_sys_rw_content_t /var/lib/dbs/htdocs/media
 
-# install / update database
-dbs syncdb --noinput || :
-
 # collect static files
 dbs collectstatic --noinput || :
 
 
 %files
-%doc README.md
+%doc README.md LICENSE
 %{_bindir}/dbs
 %{_sysconfdir}/bash_completion.d/dbs_bash_completion
-#%config(noreplace) %{cron_confdir}/dbs
-%config(noreplace) %{httpd_confdir}/dbs.conf
 %config(noreplace) %{dbs_confdir}/site_settings
-%{dbs_statedir}/htdocs/wsgi.py*
-%attr(755,root,root)           %dir %{dbs_statedir}/htdocs/static
-%attr(775,root,%{httpd_group}) %dir %{dbs_statedir}/htdocs/media
 %attr(775,root,%{httpd_group}) %dir %{dbs_statedir}/data
 %{python_sitelib}/dbs
 %{python_sitelib}/dbs-%{version}-py2.*.egg-info
+
+
+%files server
+%config(noreplace) %{httpd_confdir}/dbs.conf
+%{dbs_statedir}/htdocs/wsgi.py*
+%attr(755,root,root)           %dir %{dbs_statedir}/htdocs/static
+%attr(775,root,%{httpd_group}) %dir %{dbs_statedir}/htdocs/media
+
+
+%files worker
+%doc README-worker.md
+%if %{with systemd}
+%{_unitdir}/dbs-worker.service
+%endif
 
 
 %changelog

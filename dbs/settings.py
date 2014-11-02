@@ -17,6 +17,7 @@ from .site_settings import (
     ADMINS, MANAGERS, SERVER_EMAIL,
     LANGUAGE_CODE, TIME_ZONE, LANGUAGES,
     MEDIA_ROOT, MEDIA_URL, STATIC_ROOT, STATIC_URL,
+    BROKER_URL, CELERY_RESULT_BACKEND, CELERY_TIMEZONE,
 )
 
 
@@ -89,3 +90,11 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Celery configuration
+BROKER_TRANSPORT_OPTIONS = {'fanout_prefix': True}
+BROKER_TRANSPORT_OPTIONS = {'fanout_patterns': True}
+BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}  # 1 hour.
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT=['json']
+CELERY_ENABLE_UTC = True

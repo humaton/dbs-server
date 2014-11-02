@@ -1,10 +1,8 @@
 from threading import Thread
 from celery import Celery
 
-from dbs_worker.docker_tasks import build_image as build_image_celery, submit_results
-
-import celeryconfig
-
+from . import tasks
+from .celery import app
 
 __all__ = ('TaskApi', )
 
@@ -32,12 +30,6 @@ def watch_task(task, callback, kwargs=None):
 
 class TaskApi(object):
     """ universal API for tasks which are executed on celery workers """
-
-    def __init__(self):
-        self.client = Celery('image_build')
-
-        # config_from_object('celeryconfig') won't work because importlib
-        self.client.config_from_object(celeryconfig)
 
     def build_docker_image(self, build_image, git_url, local_tag, git_dockerfile_path=None, git_commit=None,
                            parent_registry=None, target_registries=None, tag=None, repos=None,
@@ -71,8 +63,8 @@ class TaskApi(object):
                        'git_commit': git_commit,
                        'git_dockerfile_path': git_dockerfile_path,
                        'repos': repos}
-        task_info = build_image_celery.apply_async(args=args, kwargs=task_kwargs,
-                                                   link=submit_results.s())
+        task_info = tasks.build_image.apply_async(args=args, kwargs=task_kwargs,
+                                                   link=tasks.submit_results.s())
         task_id = task_info.task_id
         if callback:
             t = Thread(target=watch_task, args=(task_info, callback, kwargs))
@@ -97,7 +89,7 @@ class TaskApi(object):
                          callback(task_response, **kwargs)
         :return: task_id
         """
-        task_info = self.client.send_task('image_build.push_image', args=[image_name, source_registry, target_registry, tags])
+        task_info = tasks.push_image.delay(image_name, source_registry, target_registry, tags)
         task_id = task_info.task_id
         if callback:
             t = Thread(target=watch_task, args=(task_info, callback, kwargs))
@@ -129,3 +121,4 @@ if __name__ == '__main__':
                          git_url="github.com/TomasTomecek/docker-hello-world.git",
                          local_tag="fedora-celery-build",
                          callback=desktop_callback)
+

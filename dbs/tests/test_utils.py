@@ -1,4 +1,4 @@
-from docker_tasks import build_image
+from dbs.tasks import build_image
 
 
 def test_build_image():

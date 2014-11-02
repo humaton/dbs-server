@@ -81,3 +81,8 @@ YUM_CACHE_ROOT = '/tmp/dbs-yum-cache'
 # Absolute path to the directory to be used as rpm _topdir
 RPMBUILD_TOPDIR = '/tmp/dbs-rpmbuild'
 
+# Celery configuration
+BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_TIMEZONE = 'Europe/Prague'
+
