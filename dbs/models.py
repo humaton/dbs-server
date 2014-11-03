@@ -23,7 +23,7 @@ class Task(models.Model):
         STATUS_SUCCESS: 'Successful',
     }
 
-    status = models.IntegerField(choices=_STATUS_NAMES.items())
+    status = models.IntegerField(choices=_STATUS_NAMES.items(), default=STATUS_PENDING)
 
     TYPE_BUILD  = 1
     TYPE_MOVE   = 2
@@ -69,7 +69,7 @@ class Image(models.Model):
         STATUS_STABLE:  'Pushed-Stable',
         STATUS_BASE:    'Base-Image',
     }
-    status = models.IntegerField(choices=_STATUS_NAMES.items())
+    status = models.IntegerField(choices=_STATUS_NAMES.items(), default=STATUS_BUILD)
 
     rpms = models.ManyToManyField(Rpms)  # FIXME: improve this model to: Content(type=RPM)
 
