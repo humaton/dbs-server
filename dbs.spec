@@ -206,6 +206,9 @@ usermod -a -G docker dbs || :
 
 
 %changelog
+* Mon Nov 03 2014 Jakub Dorňák <jdornak@redhat.com> 0.1-1
+- new package built with tito
+
 * Wed Oct 22 2014 Jakub Dorňák <jdornak@redhat.com> - 0.1-1
 - Initial package
 
