@@ -13,7 +13,7 @@
         - python-redis
         - redis
         - python-docker-py
-        - docker-io
+        - docker
         - docker-registry
 
     - name: Start services

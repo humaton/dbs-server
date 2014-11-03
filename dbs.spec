@@ -45,7 +45,7 @@ Docker Build Service Web
 Summary:        Docker Build Service Worker
 Group:          Development Tools
 Requires:       %{name}
-Requires:       docker-io
+Requires:       docker
 Requires:       systemd
 Requires(preun):    systemd-units
 Requires(postun):   systemd-units
