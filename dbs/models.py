@@ -73,14 +73,22 @@ class Image(models.Model):
 
     rpms = models.ManyToManyField(Rpms)  # FIXME: improve this model to: Content(type=RPM)
 
+    # base images won't have dockerfile
+    dockerfile = models.ForeignKey('Dockerfile', null=True, blank=True)
+
+    def __unicode__(self):
+        return u"%s: %s" % (self.hash[:12], self.get_status())
+
     def get_status(self):
         return self._STATUS_NAMES[self.status]
 
     @classmethod
-    def create(cls, image_id, status, tags=None, task=None, parent=None):
+    def create(cls, image_id, status, tags=None, task=None, parent=None, dockerfile=None):
         image, _ = cls.objects.get_or_create(hash=image_id, status=status)
         image.task = task
         image.parent = parent
+        if dockerfile:
+            image.dockerfile = dockerfile
         image.save()
         for tag in tags:
             t, _ = Tag.objects.get_or_create(name=tag)
@@ -113,3 +121,7 @@ class ImageRegistryRelation(models.Model):
     tag = models.ForeignKey(Tag, related_name="registry_bindings")
     image = models.ForeignKey(Image)
     registry = models.ForeignKey(Registry, blank=True, null=True)
+
+
+class Dockerfile(models.Model):
+    content = models.TextField()

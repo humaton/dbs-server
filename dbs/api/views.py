@@ -9,6 +9,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from functools import partial
+from dbs.models import Dockerfile
 
 from ..models import TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
 from ..task_api import TaskApi
@@ -159,7 +160,11 @@ def translate_args(translation_dict, values):
     return response
 
 
-def new_image_callback(task_id, response_hash):
+def new_image_callback(task_id, response_tuple):
+    try:
+        response_hash, df = response_tuple
+    except (TypeError, ValueError):
+        response_hash, df = None, None
     t = Task.objects.filter(id=task_id).first()
     t.date_finished = datetime.now()
     if response_hash:
@@ -168,7 +173,10 @@ def new_image_callback(task_id, response_hash):
         image_tags = response_hash['built_img_info']['RepoTags']
         parent_tags = response_hash['base_img_info']['RepoTags']
         parent_image = Image.create(parent_image_id, Image.STATUS_BASE, tags=parent_tags)
-        image = Image.create(image_id, Image.STATUS_BUILD, tags=image_tags, task=t, parent=parent_image)
+        df_model = Dockerfile(content=df)
+        df_model.save()
+        image = Image.create(image_id, Image.STATUS_BUILD, tags=image_tags,
+                             task=t, parent=parent_image, dockerfile=df_model)
         t.status = Task.STATUS_SUCCESS
     else:
         t.status = Task.STATUS_FAILED
