@@ -1,19 +1,97 @@
 from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
 
+import sys
 import copy
 import json
 import socket
+import logging
 
 from datetime import datetime
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
-from functools import partial
+from django.views.generic import View
 
+from .core import build, rebuild, ErrorDuringRequest
 from ..models import Dockerfile, TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
 from ..task_api import TaskApi
 
+
+logger = logging.getLogger(__name__)
 builder_api = TaskApi()
+
+
+class ApiCall(View):
+    required_args = []
+    optional_args = []
+    func_response = None
+    error_response = None
+    func = None
+
+    def __init__(self, **kwargs):
+        super(ApiCall, self).__init__(**kwargs)
+        self.args = None  # POST args
+
+    def process(self, **kwargs):
+        # if you call it just like self.func, python will treat it as method, not as function
+        try:
+            func = self.func.im_func  # py2
+        except AttributeError:
+            func = self.func.__func__  # py3
+        logger.debug("api callback: %s(%s, %s)", func.__name__, self.args, kwargs)
+        try:
+            self.func_response = func(self.args, **kwargs)
+        except ErrorDuringRequest as ex:
+            self.error_response = {'error': ex.message}
+        except Exception as ex:
+            logger.exception("Exception during processing request")
+            self.error_response = {'error': repr(ex)}
+
+    def validate_rest_input(self):
+        # request.body -- requets sent as json
+        # request.POST -- sent as application/*form*
+        data_sources = []
+        try:
+            data_sources.append(json.loads(self.request.body))
+        except ValueError:
+            pass
+        data_sources.append(self.request.POST)
+
+        req_is_valid = False
+        for source in data_sources:
+            for req_arg in self.required_args:
+                try:
+                    source[req_arg]
+                except KeyError:
+                    req_is_valid = False
+                    break
+                req_is_valid = True
+            if req_is_valid:
+                break
+        if not req_is_valid and self.required_args:
+            raise RuntimeError("request is missing '%s'" % req_arg)
+        for arg in source:
+            if arg not in self.optional_args and arg not in self.required_args:
+                raise RuntimeError("Invalid argument '%s' supplied" % arg)
+        return source
+
+    def compose_response(self):
+        return self.func_response
+
+    def do_request(self, request, **kwargs):
+        logger.debug("request: %s", kwargs)  # first thing is request, dont log it
+        self.process(**kwargs)
+        if self.error_response:
+            return JsonResponse(self.error_response)
+        return JsonResponse(self.compose_response())
+
+    def post(self, request, **kwargs):
+        self.args = self.validate_rest_input()
+        return self.do_request(request, **kwargs)
+
+    def get(self, request, **kwargs):
+        return self.do_request(request, **kwargs)
+
 
 @require_GET
 def list_tasks(request):
@@ -117,33 +195,6 @@ def task_status(request, task_id):
     return JsonResponse(response)
 
 
-def validate_rest_input(required_args, optional_args, request):
-    # request.body -- requets sent as json
-    # request.POST -- sent as application/*form*
-    data_sources = []
-    try:
-        data_sources.append(json.loads(request.body))
-    except ValueError:
-        pass
-    data_sources.append(request.POST)
-
-    req_is_valid = False
-    for source in data_sources:
-        for req_arg in required_args:
-            try:
-                source[req_arg]
-            except KeyError:
-                req_is_valid = False
-                break
-            req_is_valid = True
-        if req_is_valid:
-            break
-    if not req_is_valid and required_args:
-        raise RuntimeError("request is missing '%s'" % req_arg)
-    for arg in source:
-        if arg not in optional_args and arg not in required_args:
-            raise RuntimeError("Invalid argument '%s' supplied" % arg)
-    return source
 
 
 def translate_args(translation_dict, values):
@@ -159,54 +210,14 @@ def translate_args(translation_dict, values):
     return response
 
 
-def new_image_callback(task_id, response_tuple):
-    try:
-        response_hash, df = response_tuple
-    except (TypeError, ValueError):
-        response_hash, df = None, None
-    t = Task.objects.filter(id=task_id).first()
-    t.date_finished = datetime.now()
-    if response_hash:
-        image_id = response_hash['built_img_info']['Id']
-        parent_image_id = response_hash['base_img_info']['Id']
-        image_tags = response_hash['built_img_info']['RepoTags']
-        parent_tags = response_hash['base_img_info']['RepoTags']
-        parent_image = Image.create(parent_image_id, Image.STATUS_BASE, tags=parent_tags)
-        df_model = Dockerfile(content=df)
-        df_model.save()
-        image = Image.create(image_id, Image.STATUS_BUILD, tags=image_tags,
-                             task=t, parent=parent_image, dockerfile=df_model)
-        t.status = Task.STATUS_SUCCESS
-    else:
-        t.status = Task.STATUS_FAILED
-    t.save()
-
-
-@csrf_exempt
-@require_POST
-def new_image(request):
+class NewImageCall(ApiCall):
     required_args = ['git_url', 'tag']
     optional_args = ['git_dockerfile_path', 'git_commit', 'parent_registry', 'target_registries', 'repos']
-    args = validate_rest_input(required_args, optional_args, request)
+    func = build
 
-    owner = "testuser"  # XXX: hardcoded
-    local_tag = "%s/%s" % (owner, args['tag'])
+    def compose_response(self):
+        return {'task_id': self.func_response}
 
-    td = TaskData(json=json.dumps(args))
-    td.save()
-
-    t = Task(builddev_id="buildroot-fedora", status=Task.STATUS_PENDING,
-             type=Task.TYPE_BUILD, owner=owner, task_data=td)
-    t.save()
-
-    callback = partial(new_image_callback, t.id)
-
-    args.update({'build_image': "buildroot-fedora", 'local_tag': local_tag,
-                 'callback': callback})
-    task_id = builder_api.build_docker_image(**args)
-    t.celery_id = task_id
-    t.save()
-    return JsonResponse({'task_id': t.id})
 
 @csrf_exempt
 @require_POST
@@ -218,9 +229,14 @@ def move_image(request, image_id):
     print(task_id)
     return JsonResponse({'task_id': task_id})
 
-@require_POST
-def rebuild_image(request, image_id):
-    return HttpResponse("rebuild image {}".format(image_id))
+
+class RebuildImageCall(NewImageCall):
+    """ rebuild provided image; use same response as new_image """
+    required_args = []
+    optional_args = ['git_dockerfile_path', 'git_commit', 'parent_registry',
+                     'target_registries', 'repos', 'git_url', 'tag']
+    func = rebuild
+
 
 @require_POST
 def invalidate(request, tag):

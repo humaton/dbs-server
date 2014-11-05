@@ -1,9 +1,19 @@
 from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
 
+import json
+
 from django.db import models
+
+
+class TaskDataQuerySet(models.QuerySet):
+    pass
+
 
 class TaskData(models.Model):
     json = models.TextField()
+
+    objects = TaskDataQuerySet.as_manager()
+
 
 class Task(models.Model):
     celery_id = models.CharField(max_length=42, blank=True, null=True)
@@ -53,6 +63,12 @@ class Registry(models.Model):
 class YumRepo(models.Model):
     url = models.URLField()
 
+
+class ImageQuerySet(models.QuerySet):
+    def taskdata_for_imageid(self, image_id):
+        return json.loads(self.get(hash=image_id).task.task_data.json)
+
+
 class Image(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     parent = models.ForeignKey('self', null=True, blank=True)  # base images doesnt have parents
@@ -75,6 +91,8 @@ class Image(models.Model):
 
     # base images won't have dockerfile
     dockerfile = models.ForeignKey('Dockerfile', null=True, blank=True)
+
+    objects = ImageQuerySet.as_manager()
 
     def __unicode__(self):
         return u"%s: %s" % (self.hash[:12], self.get_status())
