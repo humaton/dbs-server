@@ -9,9 +9,8 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from functools import partial
-from dbs.models import Dockerfile
 
-from ..models import TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
+from ..models import Dockerfile, TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
 from ..task_api import TaskApi
 
 builder_api = TaskApi()
