@@ -4,6 +4,7 @@ import json
 import logging
 from datetime import datetime
 from functools import partial
+import socket
 from django.core.exceptions import ObjectDoesNotExist
 
 from dbs.models import Task, TaskData, Dockerfile, Image
@@ -104,4 +105,87 @@ def move_image(post_args, image_id, **kwargs):
 
 def invalidate(post_args, image_id, **kwargs):
     response = Image.objects.invalidate(image_id)
+    return response
+
+
+def task_status(args, task_id, request, **kwargs):
+    task = Task.objects.filter(id=task_id).first()
+    response = {
+        "task_id": task_id,
+        "status": task.get_status_display(),
+        "type": task.get_type_display(),
+        "owner": task.owner,
+        "started": str(task.date_started),
+        "finished": str(task.date_finished),
+        "builddev-id": task.builddev_id,
+    }
+
+    if hasattr(task, 'image'):
+        response['image_id'] = task.image.hash
+        task_data = json.loads(task.task_data.json)
+        # domain = request.get_host()
+        domain = socket.gethostbyname(request.META['SERVER_NAME'])
+        response['message'] = "You can pull your image with command: 'dock pull %s:5000/%s'" % \
+                              (domain, task_data['tag'])
+    return response
+
+
+def image_info(args, image_id, **kwargs):
+    img = Image.objects.filter(hash=image_id).first()
+
+    #rpms = []
+    #for rpm in img.rpms.all():
+    #    rpms.append({"nvr": rpm.nvr,
+    #                 "component": rpm.component,
+    #                 })
+
+    #registries = []
+    #for reg in img.registries.all():
+    #    registries.append({"url": reg.url})
+
+    response = {
+        "hash": img.hash,
+        "status": img.get_status_display(),
+        "is_invalidated": img.is_invalidated,
+        # "rpms": copy.copy(rpms),
+        "tags": img.tags,
+        # "registries": copy.copy(registries),
+        "parent": getattr(img.parent, 'hash', None)
+    }
+
+    return response
+
+
+def list_images(args, **kwargs):
+    response = []
+
+    for img in Image.objects.all():
+        response.append(image_info(args, img.hash))
+
+    return response
+
+
+def list_tasks(args, request, **kwargs):
+    response = []
+
+    for task in Task.objects.all():
+        response.append(task_status(args, task.id, request))
+
+    return response
+
+
+def image_status(args, image_id, **kwargs):
+    img = Image.objects.filter(hash=image_id).first()
+    response = {"image_id": image_id,
+                "status": img.get_status_display()}
+    return response
+
+
+def image_deps(args, image_id, **kwargs):
+    deps = []
+    response = {"image_id": image_id,
+                "deps": deps}
+    for child in Image.objects.children(image_id):
+        deps.append(image_deps(args, child.hash))
+
     return response
