@@ -17,5 +17,5 @@ urlpatterns = patterns('',
     url(r'^image/new$', csrf_exempt(views.NewImageCall.as_view())),
     url(r'^image/move/(?P<image_id>[a-zA-Z0-9]+)$', csrf_exempt(views.MoveImageCall.as_view())),
     url(r'^image/rebuild/(?P<image_id>[a-zA-Z0-9]+)$', csrf_exempt(views.RebuildImageCall.as_view())),
-    url(r'^image/invalidatechilds/(?P<tag>[a-zA-Z0-9]+)$', views.invalidate),
+    url(r'^image/invalidate/(?P<image_id>[a-zA-Z0-9:]+)$', csrf_exempt(views.InvalidateImageCall.as_view())),
 )

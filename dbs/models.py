@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
 
 import json
+from django.core.exceptions import ObjectDoesNotExist
 
 from django.db import models
 
@@ -68,6 +69,31 @@ class ImageQuerySet(models.QuerySet):
     def taskdata_for_imageid(self, image_id):
         return json.loads(self.get(hash=image_id).task.task_data.json)
 
+    def children(self, image_id):
+        return self.filter(parent=image_id)
+
+    def children_as_list(self, image_id):
+        return self.children(image_id).values_list('hash', flat=True)
+
+    def invalidate(self, image_id):
+        """
+        TODO:
+        make this more efficient
+
+        :param image_id:
+        :return:
+        """
+        count = 0
+        to_invalidate = [image_id]
+        while True:
+            try:
+                parent_image = to_invalidate.pop()
+            except IndexError:
+                break
+            count += self.filter(hash=parent_image, image__is_invalidated=False).update(is_invalidated=True)
+            to_invalidate.extend(self.children_as_list(parent_image))
+        return count
+
 
 class Image(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
@@ -91,6 +117,8 @@ class Image(models.Model):
 
     # base images won't have dockerfile
     dockerfile = models.ForeignKey('Dockerfile', null=True, blank=True)
+
+    is_invalidated = models.BooleanField(default=False)
 
     objects = ImageQuerySet.as_manager()
 

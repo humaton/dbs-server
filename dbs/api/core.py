@@ -100,3 +100,8 @@ def move_image(post_args, image_id, **kwargs):
     t.celery_id = task_id
     t.save()
     return t.id
+
+
+def invalidate(post_args, image_id, **kwargs):
+    response = Image.objects.invalidate(image_id)
+    return response

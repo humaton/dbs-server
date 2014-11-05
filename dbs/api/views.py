@@ -13,7 +13,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import View
 
 from .core import build, rebuild, ErrorDuringRequest
-from dbs.api.core import move_image
+from dbs.api.core import move_image, invalidate
 from ..models import Dockerfile, TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
 from ..task_api import TaskApi
 
@@ -128,6 +128,7 @@ def list_images(request):
             "hash": img.hash,
             "tags": img.tags,
             "status": img.get_status_display(),
+            "is_invalidated": img.is_invalidated,
             # "rpms": copy.copy(rpms),
             # "registries": copy.copy(registries),
             "parent": getattr(img.parent, 'hash', '')
@@ -225,6 +226,7 @@ class MoveImageCall(NewImageCall):
     optional_args = []
     func = move_image
 
+
 class RebuildImageCall(NewImageCall):
     """ rebuild provided image; use same response as new_image """
     required_args = []
@@ -233,6 +235,11 @@ class RebuildImageCall(NewImageCall):
     func = rebuild
 
 
-@require_POST
-def invalidate(request, tag):
-    return HttpResponse("invalidate tag {}".format(tag))
+class InvalidateImageCall(ApiCall):
+    required_args = []
+    optional_args = []
+    func = invalidate
+
+    def compose_response(self):
+        return {'message': "Invalidated %d images." % self.func_response}
+
