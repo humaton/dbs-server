@@ -91,9 +91,14 @@ def push_image(image_name, source_registry, target_registry, tags):
     if not hasattr(tags, '__iter__'):
         raise RuntimeError("argument tags is not iterable")
     d = DockerTasker()
-    final_tag = d.pull_image(image_name, source_registry)
-    for tag in tags:
-        d.tag_and_push_image(final_tag, tag, registry=target_registry)
+    try:
+        final_tag = d.pull_image(image_name, source_registry)
+        for tag in tags:
+            d.tag_and_push_image(final_tag, tag, registry=target_registry)
+    except Exception as ex:
+        return {"error": repr(ex.message)}
+    else:
+        return {"error": None}
 
 
 @shared_task

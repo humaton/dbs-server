@@ -74,3 +74,29 @@ def rebuild(post_args, image_id, **kwargs):
         if post_args:
             data.update(post_args)
         return build(data)
+
+
+def move_image_callback(task_id, response):
+    logger.debug("move callback: %s %s", task_id, response)
+    t = Task.objects.filter(id=task_id).first()
+    t.date_finished = datetime.now()
+    if response and response.get("error", False):
+        t.status = Task.STATUS_FAILED
+    else:
+        t.status = Task.STATUS_SUCCESS
+    t.save()
+
+
+def move_image(post_args, image_id, **kwargs):
+    post_args['image_name'] = image_id
+    td = TaskData(json=json.dumps(post_args))
+    td.save()
+    owner = "testuser"  # XXX: hardcoded
+    t = Task(status=Task.STATUS_PENDING, type=Task.TYPE_MOVE, owner=owner, task_data=td)
+    t.save()
+    callback = partial(move_image_callback, t.id)
+    post_args['callback'] = callback
+    task_id = builder_api.push_docker_image(**post_args)
+    t.celery_id = task_id
+    t.save()
+    return t.id

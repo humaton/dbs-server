@@ -13,6 +13,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import View
 
 from .core import build, rebuild, ErrorDuringRequest
+from dbs.api.core import move_image
 from ..models import Dockerfile, TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
 from ..task_api import TaskApi
 
@@ -219,16 +220,10 @@ class NewImageCall(ApiCall):
         return {'task_id': self.func_response}
 
 
-@csrf_exempt
-@require_POST
-def move_image(request, image_id):
+class MoveImageCall(NewImageCall):
     required_args = ['source_registry', 'target_registry', 'tags']
-    args = validate_rest_input(required_args, [], request)
-    args['image_name'] = image_id
-    task_id = builder_api.push_docker_image(**args)
-    print(task_id)
-    return JsonResponse({'task_id': task_id})
-
+    optional_args = []
+    func = move_image
 
 class RebuildImageCall(NewImageCall):
     """ rebuild provided image; use same response as new_image """

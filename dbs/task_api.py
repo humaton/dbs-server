@@ -77,7 +77,7 @@ class TaskApi(object):
 
     def push_docker_image(self, image_name, source_registry, target_registry, tags, callback=None, kwargs=None):
         """
-        pull docker image from source registry, tag it with multiple tags and push it to tagrget registry
+        pull docker image from source registry, tag it with multiple tags and push it to target registry
 
         :param image_name: image to pull
         :param source_registry: registry to pull from
