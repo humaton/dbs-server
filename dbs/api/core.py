@@ -36,6 +36,9 @@ def new_image_callback(task_id, response_tuple):
         df_model.save()
         image = Image.create(image_id, Image.STATUS_BUILD, tags=image_tags,
                              task=t, parent=parent_image, dockerfile=df_model)
+        image.add_rpms_list(response_hash['built_img_plugins_output']['all_packages'])
+        parent_image.add_rpms_list(response_hash['base_plugins_output']['all_packages'])
+
         t.status = Task.STATUS_SUCCESS
     else:
         t.status = Task.STATUS_FAILED
@@ -147,7 +150,7 @@ def image_info(args, image_id, **kwargs):
         "hash": img.hash,
         "status": img.get_status_display(),
         "is_invalidated": img.is_invalidated,
-        # "rpms": copy.copy(rpms),
+        "rpms": img.rpms_list(),
         "tags": img.tags,
         # "registries": copy.copy(registries),
         "parent": getattr(img.parent, 'hash', None)

@@ -1,9 +1,16 @@
 from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
 
 import json
-from django.core.exceptions import ObjectDoesNotExist
+import re
+import logging
 
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+
+
+logger = logging.getLogger(__name__)
 
 
 class TaskDataQuerySet(models.QuerySet):
@@ -54,9 +61,43 @@ class Task(models.Model):
     def get_status(self):
         return self._STATUS_NAMES[self.status]
 
-class Rpms(models.Model):
-    nvr = models.CharField(max_length=38)
-    component = models.CharField(max_length=38)
+
+class Package(models.Model):
+    """ TODO: software collections """
+    name = models.CharField(max_length=64)
+
+
+class RpmQuerySet(models.QuerySet):
+    def get_or_create_from_nvr(self, nvr):
+        re_nvr = re.match("(.*)-(.*)-(.*)", nvr)
+        if re_nvr:
+            name, version, release = re_nvr.groups()
+            p, _ = Package.objects.get_or_create(name=name)
+            rpm, _ = Rpm.objects.get_or_create(package=p, nvr=nvr)
+            return rpm
+        else:
+            logger.error("'%s' is not an N-V-R", nvr)
+
+
+class Rpm(models.Model):
+    package = models.ForeignKey(Package)
+    nvr = models.CharField(max_length=128)
+    part_of = GenericRelation('Content')
+
+    objects = RpmQuerySet.as_manager()
+
+    def __unicode__(self):
+        return "%s: %s" % (self.package, self.nvr)
+
+
+class Content(models.Model):
+    """
+    generic many to many
+    """
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
 
 class Registry(models.Model):
     url = models.URLField()
@@ -113,7 +154,7 @@ class Image(models.Model):
     }
     status = models.IntegerField(choices=_STATUS_NAMES.items(), default=STATUS_BUILD)
 
-    rpms = models.ManyToManyField(Rpms)  # FIXME: improve this model to: Content(type=RPM)
+    content = models.ManyToManyField(Content)
 
     # base images won't have dockerfile
     dockerfile = models.ForeignKey('Dockerfile', null=True, blank=True)
@@ -146,6 +187,20 @@ class Image(models.Model):
     @property
     def tags(self):
         return Tag.objects.for_image_as_list(self)
+
+    def rpms_list(self):
+        return list(Rpm.objects.filter(part_of__image=self).values_list('nvr', flat=True))
+
+    def add_rpms_list(self, nvr_list):
+        """
+        provide a list of RPM nvrs and link them to image
+        """
+        for nvr in nvr_list:
+            rpm = Rpm.objects.get_or_create_from_nvr(nvr)
+            if rpm:
+                rpm_ct = ContentType.objects.get(model='rpm')
+                content, _ = Content.objects.get_or_create(object_id=rpm.id, content_type=rpm_ct)
+                self.content.add(content)
 
 
 class TagQuerySet(models.QuerySet):

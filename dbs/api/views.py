@@ -1,21 +1,14 @@
 from __future__ import absolute_import, division, generators, nested_scopes, print_function, unicode_literals, with_statement
 
-import sys
-import copy
 import json
-import socket
 import logging
 
-from datetime import datetime
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.http import JsonResponse
 from django.views.generic import View
 
 from .core import build, rebuild, ErrorDuringRequest
 from dbs.api.core import move_image, invalidate, task_status, image_info, list_images, image_status, image_deps
 from dbs.web.views import task_list
-from ..models import Dockerfile, TaskData, Task, Rpms, Registry, YumRepo, Image, ImageRegistryRelation
 from ..task_api import TaskApi
 
 
