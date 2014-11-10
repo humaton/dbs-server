@@ -20,4 +20,3 @@ class TaskListView(ListView):
     model = Task
 
 task_list = TaskListView.as_view()
-
